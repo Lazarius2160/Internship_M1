@@ -59,5 +59,7 @@ at stack loc
 Generic Warning: In C:\pv\pv\VTK\Rendering\OpenGL2\vtkOpenGLState.cxx, line 234
 Error in cache state for GL_DRAW_BUFFER got 1029 expected1027
 
+## Don't know when it happened 
+:SystemInformation::RunMemoryCheck  at vtksys::SystemInformation::GetProgramStack  at vtkOpenGLState::CheckState  at vtkOpenGLState::vtkglGetBooleanv  at vtkOpenGLState::GLState::GLState  at vtkOpenGLRenderWindow::BlitDisplayFramebuffer  at QVTKRenderWindowAdapter::QVTKRenderWindowAdapter  at QVTKRenderWindowAdapter::blit  at QVTKRenderWindowAdapter::blitLeftEye  at QVTKOpenGLWindow::paintGL  at QPaintDeviceWindowPrivate::paint  at QPaintDeviceWindowPrivate::handleUpdateEvent  at QPaintDeviceWindow::event  at QVTKOpenGLWindow::event  at QApplicationPrivate::notify_helper  at QApplication::notify  at QCoreApplication::notifyInternal2  at QPlatformWindow::deliverUpdateRequest  at QPlatformWindow::windowEvent  at QApplication::notify  at QCoreApplication::notifyInternal2  at QEventDispatcherWin32Private::sendTimerEvent  at QEventDispatcherWin32::event  at QApplicationPrivate::notify_helper  at QApplication::notify  at QCoreApplication::notifyInternal2  at QCoreApplicationPrivate::sendPostedEvents  at qt_plugin_query_metadata  at QEventDispatcherWin32::processEvents  at CallWindowProcW  at DispatchMessageW  at QEventDispatcherWin32::processEvents  at qt_plugin_query_metadata  at QEventLoop::exec  at QCoreApplication::exec  at QCoreApplication::exec  at QCoreApplication::exec  at QCoreApplication::exec  at BaseThreadInitThunk  at RtlUserThreadStart
 
 
