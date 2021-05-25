@@ -61,7 +61,7 @@ int main(int, char*[])
   // The render window is the actual GUI window
   // that appears on the computer screen
   vtkNew<vtkRenderWindow> renderWindow;
-  renderWindow->SetStereoCapableWindowOn(1);     //Marine, vtkbool true =1 ??
+  renderWindow->SetStereoCapableWindow(1);     //Marine, vtkbool true =1 ??
   renderWindow->SetStereoTypeToCrystalEyes();    //Marine
   renderWindow->SetStereoRender(1);     //Marine, normalement 1 = crystal eyes dans renderwindow, besoin de déclarer ici ??
   renderWindow->SetSize(300, 300);
