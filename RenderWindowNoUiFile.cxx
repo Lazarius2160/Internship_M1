@@ -1,3 +1,6 @@
+// Create a render window inside a QWidget 
+// !! dif widget.renderWindow and the object renderwindow
+
 #include <QApplication>
 
 #include <vtkActor.h>
@@ -20,7 +23,7 @@
 
 int main(int argc, char** argv)
 {
-  // Needed to ensure appropriate OpenGL context is created for VTK rendering.
+  // marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html
   QSurfaceFormat format;
   format.setStereo(true); 
 
@@ -33,6 +36,7 @@ int main(int argc, char** argv)
   vtkNew<vtkGenericOpenGLRenderWindow> renderWindow;
 
 #if VTK890
+  //marine, need to set the stereo type before creating the render window
   renderWindow->SetStereoType(1);
   renderWindow->SetStereoCapableWindow(1);
   renderWindow->SetStereoRender(1);
