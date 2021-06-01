@@ -1,10 +1,6 @@
 // Create a render window inside a QWidget 
 // !! dif widget.renderWindow and the object renderwindow
 
-/*Classes utiles:
-*   vtkSetMacro(StereoType, int); dans vtkMRMLViewNode.h??
-* 
-*/
 
 #include <QApplication>
 
@@ -22,9 +18,10 @@
 #if VTK_VERSION_NUMBER >= 89000000000ULL
 #define VTK890 1
 #endif
+// Marine, de ce que j'ai capte grace a mes test avec vtk 9.0 vtk890 = vtk 9 
 
 #include <QSurfaceFormat>
-#include <QVTKOpenGLStereoWidget.h>
+#include <QVTKOpenGLStereoWidget.h> //marine, on utilise cet version car derniere en date et normalement fonctionne
 
 int main(int argc, char** argv)
 {
@@ -33,7 +30,7 @@ int main(int argc, char** argv)
   format.setStereo(true); 
 
   QApplication app(argc, argv);
-
+  // doit mettre le widget au format stereo
   QVTKOpenGLStereoWidget widget;
   widget.setFormat(format);
 
@@ -74,7 +71,7 @@ int main(int argc, char** argv)
   widget.renderWindow()->SetWindowName(widget.renderWindow()->GetStereoTypeAsString()); // Marine, get viens du vtkrenderwindow
   widget.renderWindow()->StereoUpdate();
   cout << "Type de render : " << widget.renderWindow()->GetStereoTypeAsString() << endl;
-  cout << "VTK version 8.9" << endl;
+  cout << "VTK version 9" << endl;
   renderWindow->Render();
   
 #else
