@@ -1,6 +1,11 @@
 // Create a render window inside a QWidget 
 // !! dif widget.renderWindow and the object renderwindow
 
+/*Classes utiles:
+*   vtkSetMacro(StereoType, int); dans vtkMRMLViewNode.h??
+* 
+*/
+
 #include <QApplication>
 
 #include <vtkActor.h>
@@ -23,13 +28,14 @@
 
 int main(int argc, char** argv)
 {
-  // marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html
+  // marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html, voir dans QVTKOpenGLWindow.h ouis qsurfqceformat
   QSurfaceFormat format;
   format.setStereo(true); 
 
   QApplication app(argc, argv);
 
   QVTKOpenGLStereoWidget widget;
+  widget.setFormat(format);
 
   vtkNew<vtkNamedColors> colors;
 
@@ -65,7 +71,7 @@ int main(int argc, char** argv)
 
 #if VTK890
   widget.renderWindow()->AddRenderer(renderer);
-  widget.renderWindow()->SetWindowName(widget.renderWindow()->GetStereoTypeAsString());
+  widget.renderWindow()->SetWindowName(widget.renderWindow()->GetStereoTypeAsString()); // Marine, get viens du vtkrenderwindow
   widget.renderWindow()->StereoUpdate();
   cout << "Type de render : " << widget.renderWindow()->GetStereoTypeAsString() << endl;
   cout << "VTK version 8.9" << endl;
