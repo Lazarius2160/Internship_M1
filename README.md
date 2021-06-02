@@ -7,4 +7,10 @@ https://www.techiedelight.com/clone-specific-tag-with-git/#:~:text=git%20clone,-
 
 
 ### Errors
+Au moment de la generation du cmake :  
+
+CMake Error: AUTOUIC for target RenderWindowUISingleInheritance: Test run of "uic" executable "C:/Qt/5.15.2/msvc2019_64/bin/uic.exe" failed.
+C:/Qt/5.15.2/msvc2019_64/bin/uic.exe -h  
+
+Exit code 0xc0000135
 
