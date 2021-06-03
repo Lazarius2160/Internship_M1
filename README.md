@@ -15,3 +15,6 @@ C:/Qt/5.15.2/msvc2019_64/bin/uic.exe -h
 Exit code 0xc0000135  
 
 > Apparement dans vtk examples dis aue pbm vient de "This approach also ensures that when CMAKE_AUTOUIC is set to ON and subfolders are used we get a build with no errors." coherent mqis pqs solution!
+
+### A mettre one note:  
+View nodes are connected with 3D rendering widgets. PlotView with Plotting widgets. Slices (Red, Green, Yellow) with 2D rendering widgets
