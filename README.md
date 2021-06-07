@@ -16,5 +16,10 @@ Exit code 0xc0000135
 
 > Apparement dans vtk examples dis aue pbm vient de "This approach also ensures that when CMAKE_AUTOUIC is set to ON and subfolders are used we get a build with no errors." coherent mqis pqs solution!
 
+#### error slicer 4.13:
+quand met quadbuff :  
+*An OpenGL Core Profile was requested, but it is not supported on the current platform. Falling back to a non-Core profile. Note that this might cause rendering issues.*
+
+
 ### A mettre one note:  
 View nodes are connected with 3D rendering widgets. PlotView with Plotting widgets. Slices (Red, Green, Yellow) with 2D rendering widgets
