@@ -22,17 +22,24 @@
 
 #include <QSurfaceFormat>
 #include <QVTKOpenGLStereoWidget.h> //marine, on utilise cet version car derniere en date et normalement fonctionne
+#include <QVTKOpenGLNativeWidget.h>
 
 int main(int argc, char** argv)
 {
+
+	//marine, test creer un layout avec un seul widget qui n'est pas en stereo
+	// ajout un nouveau widget en stereo (prennent les meme mapper et actor)
+
+
   // marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html, voir dans QVTKOpenGLWindow.h ouis qsurfqceformat
-  QSurfaceFormat format;
-  format.setStereo(true); 
+  //QSurfaceFormat format;
+  //format.setStereo(true); 
+  QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat(1));
 
   QApplication app(argc, argv);
   // doit mettre le widget au format stereo
   QVTKOpenGLStereoWidget widget;
-  widget.setFormat(format);
+  //widget.setFormat(format);
 
   vtkNew<vtkNamedColors> colors;
 
@@ -65,6 +72,8 @@ int main(int argc, char** argv)
   vtkNew<vtkRenderer> renderer;
   renderer->AddActor(sphereActor);
   renderer->SetBackground(colors->GetColor3d("SteelBlue").GetData());
+
+
 
 #if VTK890
   widget.renderWindow()->AddRenderer(renderer);
