@@ -1,4 +1,4 @@
-/* QuadBuffer using a render window (not qvtkstereowidget!) ad a render window interactor
+/* QuadBuffer using a render window (not qvtkstereowidget!) add a render window interactor
 Only in VTK, later in Slicer
 Use the examples in VTK examples cxx hello world with a cylinder
 */
@@ -59,7 +59,7 @@ int main(int, char* [])
 
     // The render window is the actual GUI window
     // that appears on the computer screen
-    vtkNew<vtkRenderWindow> renderWindow;
+    vtkNew<vtkRenderWindow> renderWindow;    
     renderWindow->SetStereoType(1);    //Marine, c'est cette fonction qu'il fqut utiliser elle est dans vtkRenderWindow.cxx et non celle ci SetStereoTypeToCrystalEyes aui est dans le header
     renderWindow->SetStereoCapableWindow(1);     //Marine, 1 = crystal eyes
     renderWindow->SetStereoRender(1);     //Marine,  1 = crystal eyes
