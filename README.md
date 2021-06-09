@@ -1,11 +1,9 @@
-# stage_m1
-Code pour le stage à l'ICM / ISIR, developpement d'une IHM pour la stimulation cérébrale profonde.
+# Intership Master 1
+Development of an HMI for the planning of deep brain stimulation.
+Creating a 3D slicer module to use it onto a zSpace device.  
 
-### Liens a ajouter one note:  
-https://discourse.slicer.org/t/slicer-4-10-summary-highlights-and-changelog/4610
-https://www.techiedelight.com/clone-specific-tag-with-git/#:~:text=git%20clone,-You%20can%20also&text=It%20has%20%E2%80%93branch%20option%2C%20which,.&text=If%20you%20only%20need%20the,branches%20in%20the%20cloned%20repository.
-
-
-### useful:  
-https://discourse.slicer.org/t/save-image-of-3d-view/2666/8 
-
+### How to navigate through this repo:
+Errors : just a mess, do not open  
+vtkQuadBufferRenderWindow : used the Cylinder example from [vtk example](https://kitware.github.io/vtk-examples/site/Cxx/GeometricObjects/CylinderExample/) to make a window render in quadbuffer mode
+vtkQuadBufferWidget : used the RenderWindowNoUiFile from [vtk example](https://kitware.github.io/vtk-examples/site/Cxx/Qt/RenderWindowNoUiFile/) to create a widget which renders in quadbuffer mode
+WidgetNewLayout.cxx : currently trying to create a 3D view outside the layout on slicer and having it display in quadbuffer mode
