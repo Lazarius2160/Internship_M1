@@ -1,9 +1,34 @@
-// Create a render window inside a QWidget 
-// !! dif widget.renderWindow and the object renderwindow
+/*Create a new 3D widget outside the current layout to display in stereo mode,
+Needs to have :
+- a surface supporting stereo mode
+- a new widget of qMRMLThreeDWidget type to be suppored by 3DSlicer
+- a render window set up for stereo mode
+- a new MRML node connected to the actual MRML Scene
+- a new layout to add to the layout manager
+*/
 
+// Qt includes
+#include <QSurfaceFormat>
 
-#include <QApplication>
+// MRML includes
+#include <vtkMRMLScene.h> //marine, include pour les nodes et la scene
+#include <vtkMRMLViewNode.h> //marine, include pour les nodes et la scene
+// #include "vtkMRMLLayoutLogic.h" marine, so far pas eu besoin
 
+// MRMLWidgets includes
+#include <qMRMLThreeDWidget.h> //marine, accede à la renderwindow depuis threedview car herite de ctkVTKRenderView qui herite de ctkVTKAbstractView 
+// #include <qMRMLThreeDViewControllerWidget.h> marine, so far pas eu besoin
+// 
+// MRMLLogic includes
+#include <vtkMRMLViewLogic.h> //marine, include pour les nodes et la scene
+
+// Slicer includes
+#include <QVTKOpenGLStereoWidget.h> //marine, on utilise cet version car derniere en date et normalement fonctionne
+#include <QVTKOpenGLNativeWidget.h>
+// #include "qSlicerApplication.h"  marine, so far pas eu besoin
+// #include "qSlicerLayoutManager.h"  marine, so far pas eu besoin
+
+// VTK includes
 #include <vtkActor.h>
 #include <vtkGenericOpenGLRenderWindow.h>
 #include <vtkNamedColors.h>
@@ -17,27 +42,18 @@
 
 /*
 * Verifie les versions vtk ? si oui voir le render no ui file dans vtk examples
+* !! pense plutot lever une exception si pas vtk 9 car marche pas en 8?
 #if VTK_VERSION_NUMBER >= 89000000000ULL
 #define VTK890 1
 #endif
 */
-
 // Marine, de ce que j'ai capte grace a mes test avec vtk 9.0 vtk890 = vtk 9 
 
-#include <QSurfaceFormat>
-#include <QVTKOpenGLStereoWidget.h> //marine, on utilise cet version car derniere en date et normalement fonctionne
-#include <QVTKOpenGLNativeWidget.h>
-#include <vtkMRMLScene.h> //marine, include pour les nodes et la scene
-#include <vtkMRMLViewLogic.h> //marine, include pour les nodes et la scene
-#include <vtkMRMLViewNode.h> //marine, include pour les nodes et la scene
-#include <qMRMLThreeDWidget.h>
+
 
 
 int main(int argc, char** argv)
 {
-
-	//marine, test creer un widget en stereo hors du layout
-
 	//marine, LAYOUT
 	string layoutName("Test3DView");
 	string layoutLabel("QB");
@@ -58,13 +74,7 @@ int main(int argc, char** argv)
 	viewNode->SetAndObserveParentLayoutNodeID(viewOwnerNode.GetID()); //marine, structure?
 	viewNode->SetStereoType(1); // on active le mode stereo dans le noeud, ne sait pas si ca sert
 
-	//marine, pas besoin de app?? QApplication app(argc, argv);
 
-
-	// marine, SURFACE
-	// marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html, voir dans QVTKOpenGLWindow.h ouis qsurfqceformat
-	QSurfaceFormat format;
-	format.setFormat(format);
 
 	//WIDGET
 	// pour palier au manque de : QVTKOpenGLStereoWidget,  on créer un widget slicer classique et on lui ajoute la render window
@@ -72,29 +82,26 @@ int main(int argc, char** argv)
 	viewWidget->setQuadBufferStereoSupportEnabled(1);
 	viewWidget->SetMRMLScene(q->mrmlScene()); //marine, voir pk cette structure
 	viewWidget->SetMRMLViewNode(viewNode);
-	// traduire ca en c++ : slicer.app.layoutManager().threeDWidget(0).threeDView().renderWindow().SetStereoType(1)
-	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! accede à la renderwindow depuis threedview car herite de ctkVTKRenderView qui herite de ctkVTKAbstractView 
-	viewWiget.threeDView().renderWindow
 	
-
-	//marine, RENDER WINDOW ??????????????????????????????????????????
-	//vtkNew<vtkGenericOpenGLRenderWindow> renderWindow;
-	//marine, need to set the stereo type before creating the render window
+	//!!!!!!!!!!! doit mettre la surface dans le widget
+	// marine, SURFACE
+	// marine, oblige de modifier la surface pour afficher en stereo
+	QSurfaceFormat format;
+	format.setStereo(true);
+	viewWidget.setFormat(format);
+	
+	//marine, RENDER WINDOW ?
+	renderWindow = viewWiget.threeDView().renderWindow();
 	renderWindow->SetStereoType(1);
 	renderWindow->SetStereoCapableWindow(1);
 	renderWindow->SetStereoRender(1);
-	widget.setRenderWindow(renderWindow);
-	widget.resize(600, 600);
-	widget.renderWindow()->StereoUpdate();
+	viewWidget.setRenderWindow(renderWindow);  // PAS TESTER AVEC
+	//widget.resize(600, 600);
+	viewWidget.renderWindow()->StereoUpdate();
 	renderWindow->Render();
-	//?????????????????????
 
 
-
-
-	widget.show();
-
-	//marine, pas besoin de app : app.exec();
+	viewWidget.show();
 
 	return EXIT_SUCCESS;
 }
