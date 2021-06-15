@@ -1,3 +1,8 @@
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# apparement bcp de fuite de memoire a la sortie de slicer
+# pour voir d'ou viens le pbm test les lignes 1 par une en sortant a chaque fois
+
+
 layoutName = "Test3DView"  
 layoutLabel = "T3"  
 layoutColor = [1.0, 1.0, 0.0]  
