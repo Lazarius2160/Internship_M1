@@ -27,19 +27,17 @@
 int main(int argc, char** argv)
 {
 
-	//marine, test creer un layout avec un seul widget qui n'est pas en stereo
-	// ajout un nouveau widget en stereo (prennent les meme mapper et actor)
-
-
-  // marine, By default setstereo is OFF so quadbuffering is not possible https://doc.qt.io/qt-5/qsurfaceformat.html, voir dans QVTKOpenGLWindow.h ouis qsurfqceformat
-  //QSurfaceFormat format;
-  //format.setStereo(true); 
-  QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat(1));
-
   QApplication app(argc, argv);
-  // doit mettre le widget au format stereo
+  
+  //Marine, doit avoir le surface format pret pour la stereo donc utilise :
+  QSurfaceFormat format;
+  format.setStereo(true);   
+  //marine, ou en une ligne : QSurfaceFormat::setDefaultFormat(QVTKOpenGLStereoWidget::defaultFormat(1));
+  // marine, test sans stereo widget mais marche pas:  QSurfaceFormat::setDefaultFormat(QVTKOpenGLNativeWidget::defaultFormat(1));
+
   QVTKOpenGLStereoWidget widget;
-  //widget.setFormat(format);
+  //QVTKOpenGLNativeWidget widget;
+  widget.setFormat(format);
 
   vtkNew<vtkNamedColors> colors;
 
@@ -79,22 +77,21 @@ int main(int argc, char** argv)
   widget.renderWindow()->AddRenderer(renderer);
   widget.renderWindow()->SetWindowName(widget.renderWindow()->GetStereoTypeAsString()); // Marine, get viens du vtkrenderwindow
   widget.renderWindow()->StereoUpdate();
-  cout << "Type de render : " << widget.renderWindow()->GetStereoTypeAsString() << endl;
-  cout << "VTK version 9" << endl;
+  //cout << "Type de render : " << widget.renderWindow()->GetStereoTypeAsString() << endl;
+  //cout << "VTK version 9" << endl;
   renderWindow->Render();
   
 #else
   widget.GetRenderWindow()->AddRenderer(renderer);
   widget.GetRenderWindow()->SetWindowName(widget.GetRenderWindow()->GetStereoTypeAsString());
   widget.GetRenderWindow()->StereoUpdate();
-  cout << "Type de render : " << widget.GetRenderWindow()->GetStereoTypeAsString() << endl;
-  cout << "vtk autre version" << endl;
+  //cout << "Type de render : " << widget.GetRenderWindow()->GetStereoTypeAsString() << endl;
+  //cout << "vtk autre version" << endl;
   renderWindow->Render();
 
 #endif
 
   widget.show();
-
   app.exec();
 
   return EXIT_SUCCESS;
