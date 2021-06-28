@@ -1,0 +1,1 @@
+#   Photos for internship report
