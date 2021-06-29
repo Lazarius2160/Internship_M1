@@ -54,11 +54,6 @@ Needs to have :
 
 int main(int argc, char** argv)
 {
-	//marine, LAYOUT
-	string layoutName("Test3DView");
-	string layoutLabel("QB");
-	float layoutColor[3] = { 0.0, 0.0, 1.0 };
-
 	// marine, ownerNode manages this view instead of the layout manager(it can be any node in the scene)
 	vtkNew<vtkMRMLScene> viewOwnerNode;
 	viewOwnerNode->AddNewNodeByClass("vtkMRMLQuadBufferModuleNode");
@@ -66,7 +61,12 @@ int main(int argc, char** argv)
 	//marine, Create MRML NODE
 	vtkNew<vtkMRMLViewLogic> viewLogic;
 	viewLogic->setMRMLScene(q->mrmlScene()); //marine, pk q dans le module view controller??
-
+	
+	//marine, LAYOUT
+	string layoutName("Test3DView");
+	string layoutLabel("QB");
+	float layoutColor[3] = { 0.0, 0.0, 1.0 };
+	
 	vtkNew<vtkMRMLViewNode> viewNode;
 	viewNode.viewLogic->AddViewNode(layoutName); //marine , structure de ce truc??
 	viewNode->SetLayoutLabel(layoutLabel);  //marine,trouve ses fonctions dans son heritage
