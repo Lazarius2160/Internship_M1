@@ -15,7 +15,7 @@ class QuadBufferPython(ScriptedLoadableModule):
     ScriptedLoadableModule.__init__(self, parent)
     self.parent.title = "Quad Buffer Python"  # TODO: make this more human readable by adding spaces
     self.parent.categories = ["Examples"]  # TODO: set categories (folders where the module shows up in the module selector)
-    self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
+    self.parent.contributors = ["Marine CAMBA (Institut du Cerveau et de la Moelle Epinière - Paris, ISIR Sorbonne Université - Paris), Sara FERNANDEZ VIDAL (Institut du Cerveau et de la Moelle Epinière - Paris)"]  # TODO: replace with "Firstname Lastname (Organization)"
     # TODO: update with short description of the module and a link to online module documentation
     self.parent.helpText = """
 This is an example of scripted loadable module bundled in an extension."""
