@@ -33,6 +33,13 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
 class QuadBufferPythonWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
   """Uses ScriptedLoadableModuleWidget base class  """
 
+  """____________define class attributes______________"""
+  # ownerNode manages this view instead of the layout manager (it can be any node in the scene)
+  viewOwnerNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLScriptedModuleNode")
+  viewLogic = slicer.vtkMRMLViewLogic()
+  viewNode = viewLogic.AddViewNode("QuadBuffered window")
+  viewWidget = slicer.qMRMLThreeDWidget()
+
   def __init__(self, parent=None):
     """
     Called when the user opens the module the first time and the widget is initialized.
@@ -79,22 +86,32 @@ class QuadBufferPythonWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.ui.invertOutputCheckBox.connect("toggled(bool)", self.updateParameterNodeFromGUI)
     self.ui.invertedOutputSelector.connect("currentNodeChanged(vtkMRMLNode*)", self.updateParameterNodeFromGUI)
 
+    #_______________Appelle methode pour setup le layout___________________________
+    self.setupQuadBuffer()
+
     # Buttons
-    self.ui.applyButton.connect('clicked(bool)', self.onApplyButton)
+    # Clicking on the button in the UI activate the enableQuadBufferMode method
+    # Needed here or done in the .ui file : pense que dans le UI c'est le lien entre les boutons
+    # eux meme alors que connect lien bouton avec methode (pas besoin de ce truc de scene du coup?)
+
+    self.ui.EnableQuadBufferButton.connect('clicked(bool)', self.enableQuadBufferMode)
 
     # Make sure parameter node is initialized (needed for module reload)
     self.initializeParameterNode()
 
-  def cleanup(self):
-    """
-    Called when the application closes and the module widget is destroyed.
-    """
-    self.removeObservers()
+
 
 
 
 
 """______________pas de parameter node donc doit remplacer par les valeurs que l'on veut____________"""
+
+  def cleanup(self):
+    """
+    Called when the application closes and the module widget is destroyed.
+    """
+    self.removeObservers()  
+    
   def onSceneStartClose(self, caller, event):
     """
     Called just before the scene is closed.
@@ -110,25 +127,30 @@ class QuadBufferPythonWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     if self.parent.isEntered:
       self.initializeParameterNode()
 
-  
-  def onApplyButton(self):
+"""_____________________Process de creation du layout + add widget info___________________"""
+  def setupQuadBuffer(self):
+    """ pour l'instnt essaye juste afficher le widget 3d en dehors du layout classique avec le
+    callback ici"""
+    # layoutName = "QuadBuffered window">> put directly inside viewNode 
+    layoutLabel = "QB"
+    layoutColor = [0.0, 0.0, 1.0]
+    # Create MRML node
+    self.viewLogic.SetMRMLScene(slicer.mrmlScene)
+    self.viewNode.SetLayoutLabel(layoutLabel)
+    self.viewNode.SetLayoutColor(layoutColor)
+    self.viewNode.SetAndObserveParentLayoutNodeID(self.viewOwnerNode.GetID())
+
+    # Create widget
+    self.viewWidget.setMRMLScene(slicer.mrmlScene)
+    self.viewWidget.setMRMLViewNode(self.viewNode)
+
+""" ____________________Callback de uand on a cliqué sur le bouton________________________"""
+  def enableQuadBufferMode(self):
     """
-    Run processing when user clicks "Apply" button.
+    Show the widget when user clicks "EnableQuadBufferButton" button.
+    Works like a callback method.
     """
-    try:
-
-      # Compute output
-      self.logic.process(self.ui.inputSelector.currentNode(), self.ui.outputSelector.currentNode(),
-        self.ui.imageThresholdSliderWidget.value, self.ui.invertOutputCheckBox.checked)
-
-      # Compute inverted output (if needed)
-      if self.ui.invertedOutputSelector.currentNode():
-        # If additional output volume is selected then result with inverted threshold is written there
-        self.logic.process(self.ui.inputSelector.currentNode(), self.ui.invertedOutputSelector.currentNode(),
-          self.ui.imageThresholdSliderWidget.value, not self.ui.invertOutputCheckBox.checked, showResult=False)
-
-    except Exception as e:
-      slicer.util.errorDisplay("Failed to compute results: "+str(e))
-      import traceback
-      traceback.print_exc()
+    """ pour l'instnt essaye juste afficher le widget 3d en dehors du layout classique avec le
+    callback ici"""
+    self.viewWidget.show()
 
