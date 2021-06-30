@@ -16,15 +16,12 @@ class myFirstModule(ScriptedLoadableModule):
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "myFirstModule"  # TODO: make this more human readable by adding spaces
-    self.parent.categories = ["Examples"]  # TODO: set categories (folders where the module shows up in the module selector)
-    self.parent.dependencies = []  # TODO: add here list of module names that this module requires
-    self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
-    # TODO: update with short description of the module and a link to online module documentation
+    self.parent.title = "myFirstModule"  
+    self.parent.categories = ["Test"]  
+    self.parent.dependencies = []  
+    self.parent.contributors = ["Marine CAMBA - CENIR Paris Brain Institute, Sara FERNANDEZ VIDAL - CENIR Paris Brain Institute"]  
     self.parent.helpText = """
-This is an example of scripted loadable module bundled in an extension.
-See more information in <a href="https://github.com/organization/projectname#myFirstModule">module documentation</a>.
-"""
+This module allows user to display in QuadBuffer Stereo mode in Slicer 4.11 using VTK 8"""
     # TODO: replace with organization, grant and thanks
     self.parent.acknowledgementText = """
 This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc., Andras Lasso, PerkLab,
@@ -34,9 +31,6 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
 
 
 class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
-  """Uses ScriptedLoadableModuleWidget base class, available at:
-  https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
-  """
 
   def __init__(self, parent=None):
     """
