@@ -86,9 +86,10 @@ class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # self.viewWidget.setFormat(self.setStrereo(True)) #passe au format stereo, voit si bonne forme pour le code
     
     #Modify render window
-    #attention a quelle render window on touche, normalement celle de viewWidget donc OK
+    #attention a quelle render window on touche, normalement celle de viewWidget donc OK 
     # self.renderWindowQuadBuffer = self.viewWidget.threeDView().renderWindow()
     # self.renderWindowQuadBuffer.SetStereoType(2) #1=crystaleyes, 2=red blue
+    # DOIT DIRE QUE LA WINDOW EST STEREO CAPABLE AVANT DE LUI AFFECTER LE NOEUD CAR AVANT LE RENDER (logique ou pas du tout?)
     #self.renderWindowQuadBuffer.SetStereoCapableWindow(1)  #on off if the window is created in stereo capable mode
     #self.renderWindowQuadBuffer.SetStereoRender(1)  #on off for stereo rendering
     # comme on créer la fenetre a partir de view widget surement pas besoin de ces 3 lignes :
