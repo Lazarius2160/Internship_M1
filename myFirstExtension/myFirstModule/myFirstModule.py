@@ -6,31 +6,39 @@ from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 
 #
-# myFirstModule
+# mySecondModule
 #
 
-class myFirstModule(ScriptedLoadableModule):
+class mySecondModule(ScriptedLoadableModule):
   """Uses ScriptedLoadableModule base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
-    self.parent.title = "myFirstModule"  
-    self.parent.categories = ["Test"]  
-    self.parent.dependencies = []  
-    self.parent.contributors = ["Marine CAMBA - CENIR Paris Brain Institute, Sara FERNANDEZ VIDAL - CENIR Paris Brain Institute"]  
+    self.parent.title = "mySecondModule"  # TODO: make this more human readable by adding spaces
+    self.parent.categories = ["Examples"]  # TODO: set categories (folders where the module shows up in the module selector)
+    self.parent.dependencies = []  # TODO: add here list of module names that this module requires
+    self.parent.contributors = ["John Doe (AnyWare Corp.)"]  # TODO: replace with "Firstname Lastname (Organization)"
+    # TODO: update with short description of the module and a link to online module documentation
     self.parent.helpText = """
-This module allows user to display in QuadBuffer Stereo mode in Slicer 4.11 using VTK 8"""
+This is an example of scripted loadable module bundled in an extension.
+See more information in <a href="https://github.com/organization/projectname#mySecondModule">module documentation</a>.
+"""
     # TODO: replace with organization, grant and thanks
     self.parent.acknowledgementText = """
 This file was originally developed by Jean-Christophe Fillion-Robin, Kitware Inc., Andras Lasso, PerkLab,
 and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR013218-12S1.
 """
 
+#
+# mySecondModuleWidget
+#
 
-
-class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class mySecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+  """Uses ScriptedLoadableModuleWidget base class, available at:
+  https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
+  """
 
   def __init__(self, parent=None):
     """
@@ -50,7 +58,7 @@ class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
     # Load widget from .ui file (created by Qt Designer).
     # Additional widgets can be instantiated manually and added to self.layout.
-    uiWidget = slicer.util.loadUI(self.resourcePath('UI/myFirstModule.ui'))
+    uiWidget = slicer.util.loadUI(self.resourcePath('UI/mySecondModule.ui'))
     self.layout.addWidget(uiWidget)
     self.ui = slicer.util.childWidgetVariables(uiWidget)
 
@@ -74,11 +82,16 @@ class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.viewNode = self.viewLogic.AddViewNode(layoutName)
     self.viewNode.SetLayoutLabel(layoutLabel)
     self.viewNode.SetLayoutColor(layoutColor)
-    self.viewNode.SetAndObserveParentLayoutNodeID(self.viewOwnerNode.GetID())
-    #self.viewNode.SetStereoType(5) #active le mode stereo sur l'image + dans le menu déroulant, cad comme si clique moi sur le bouton, 1=redblue, 4=interlaced
+    self.viewNode.SetAndObserveParentLayoutNodeID(self.viewOwnerNode.GetID())    
+    # DOIT DIRE QUE LA WINDOW EST STEREO CAPABLE AVANT DE LUI AFFECTER LE NOEUD CAR AVANT LE RENDER (logique ou pas du tout?)
+    #attention a quelle render window on touche, normalement celle de viewWidget donc OK 
+    self.viewWidget = slicer.qMRMLThreeDWidget() 
+    self.renderWindowQuadBuffer = self.viewWidget.threeDView().renderWindow()
+    self.renderWindowQuadBuffer.SetStereoCapableWindow(1)  #on off if the window is created in stereo capable mode
+    self.viewNode.SetStereoType(3) #active le mode stereo sur l'image + dans le menu déroulant, cad comme si clique moi sur le bouton, 3=quadbuffer
 
     # Create widget
-    self.viewWidget = slicer.qMRMLThreeDWidget()
+
     # self.viewWidget.setQuadBufferStereoSupportEnabled(1)
     self.viewWidget.setMRMLScene(slicer.mrmlScene)
     self.viewWidget.setMRMLViewNode(self.viewNode)
@@ -86,11 +99,9 @@ class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     # self.viewWidget.setFormat(self.setStrereo(True)) #passe au format stereo, voit si bonne forme pour le code
     
     #Modify render window
-    #attention a quelle render window on touche, normalement celle de viewWidget donc OK 
-    # self.renderWindowQuadBuffer = self.viewWidget.threeDView().renderWindow()
-    # self.renderWindowQuadBuffer.SetStereoType(2) #1=crystaleyes, 2=red blue
-    # DOIT DIRE QUE LA WINDOW EST STEREO CAPABLE AVANT DE LUI AFFECTER LE NOEUD CAR AVANT LE RENDER (logique ou pas du tout?)
-    #self.renderWindowQuadBuffer.SetStereoCapableWindow(1)  #on off if the window is created in stereo capable mode
+
+    self.renderWindowQuadBuffer.SetStereoType(1) #1=crystaleyes, 2=red blue
+
     #self.renderWindowQuadBuffer.SetStereoRender(1)  #on off for stereo rendering
     # comme on créer la fenetre a partir de view widget surement pas besoin de ces 3 lignes :
     #self.viewWidget.setRenderWindow(self.renderWindowQuadBuffer)
@@ -102,6 +113,9 @@ class myFirstModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
 
   def showQuadBufferWidget(self):
     self.viewWidget.show()
-    print(self.viewNode.GetStereoType())
+    print(self.viewNode.GetStereoType()) #Not available as string only int
+    print(self.renderWindowQuadBuffer.GetStereoTypeAsString())
+
+
 
 
