@@ -15,5 +15,5 @@ Screenshots : images for my internship report.
 - test is a cxx file used to test different widgets, render window and surface. It displays 2 widgets.  
 
 CLI python.py: used to test out python command line into Slicer's python interactor.  
-Project_NA_MIC... : first draft of my project web page for NA MIC Week.
+Project_NA_MIC... : first draft of my [project web page for NA MIC Week](https://github.com/NA-MIC/ProjectWeek/tree/master/PW35_2021_Virtual/Projects/VRDisplayPluginForPyDBSUsingZspace).
 WidgetNewLayout.cxx : **draft**, a mix of Slicer programming to create a 3D view outside the layout and having it display in quadbuffer mode using my previous VTK code.
