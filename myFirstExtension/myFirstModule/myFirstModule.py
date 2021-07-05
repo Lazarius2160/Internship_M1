@@ -2,6 +2,8 @@ import os
 import unittest
 import logging
 import vtk, qt, ctk, slicer
+from PythonQt5 import QtGui
+from vtk.qt5.QVTKOpenGLWidget import QVTKOpenGLWidget
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 
@@ -31,7 +33,7 @@ and Steve Pieper, Isomics, Inc. and was partially funded by NIH grant 3P41RR0132
 # mySecondModuleWidget
 #
 
-class mySecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
+class mySecondModuleWidget(ScriptedLoadableModuleWidget):    
   """Uses ScriptedLoadableModuleWidget base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
@@ -41,7 +43,6 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     Called when the user opens the module the first time and the widget is initialized.
     """
     ScriptedLoadableModuleWidget.__init__(self, parent)
-    VTKObservationMixin.__init__(self)  # needed for parameter node observation
     self.logic = None
     self._parameterNode = None
     self._updatingGUIFromParameterNode = False
@@ -77,17 +78,18 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     self.viewNode.SetLayoutLabel(layoutLabel)
     self.viewNode.SetLayoutColor(layoutColor)
     self.viewNode.SetAndObserveParentLayoutNodeID(self.viewOwnerNode.GetID())    
-    # self.viewNode.SetStereoType(3) #active le mode stereo sur l'image + dans le menu déroulant, cad comme si clique moi sur le bouton, 3=quadbuffer
 
-    self.viewWidget = slicer.qMRMLThreeDWidget() 
+    self.stereoWidget = QVTKOpenGLWidget()
+    self.viewWidget = slicer.qMRMLThreeDWidget(self.stereoWidget) 
     # self.viewWidget.setFormat(self.setStrereo(True)) #passe au format stereo, voit si bonne forme pour le code
-    # self.viewWidget.setQuadBufferStereoSupportEnabled(1)
+    self.viewWidget.setQuadBufferStereoSupportEnabled(1)
 
     self.renderWindowQuadBuffer = self.viewWidget.threeDView().renderWindow()
     self.renderWindowQuadBuffer.SetStereoCapableWindow(1)  #on off if the window is created in stereo capable mode, needs to be stereowidget
-    self.renderWindowQuadBuffer.SetStereoType(1) #1=crystaleyes, 2=red blue
-    #self.renderWindowQuadBuffer.SetStereoRender(1)  #on off for stereo rendering
+    #self.renderWindowQuadBuffer.SetStereoType(2) #1=crystaleyes, 2=red blue  >> seul ne se passe rien doit ajouter autre chose
+    self.renderWindowQuadBuffer.SetStereoRender(1)  #on off for stereo rendering
 
+    self.viewNode.SetStereoType(3) #active le mode stereo sur l'image + dans le menu déroulant, cad comme si clique moi sur le bouton, 3=quadbuffer
     self.viewWidget.setMRMLScene(slicer.mrmlScene)
     self.viewWidget.setMRMLViewNode(self.viewNode)
     self.viewWidget.resize(800, 800)
@@ -96,16 +98,18 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget, VTKObservationMixin):
     #Modify render window
     # comme on créer la fenetre a partir de view widget surement pas besoin de ces 3 lignes :
     #self.viewWidget.setRenderWindow(self.renderWindowQuadBuffer)
-    #self.viewWidget.renderWindowQuadBuffer.StereoUpdate()
     #self.renderWindowQuadBuffer.Render()
     
     self.ui.EnableQuadBufferButton.connect('clicked(bool)', self.showQuadBufferWidget)
 
 
   def showQuadBufferWidget(self):
+    # self.renderWindowQuadBuffer.StereoUpdate() ici ou dans la fonction precedente fait crash l'appli
     self.viewWidget.show()
+    # tests
     print(self.viewNode.GetStereoType()) #Not available as string only int
     print(self.renderWindowQuadBuffer.GetStereoTypeAsString())
+  
 
 
 
