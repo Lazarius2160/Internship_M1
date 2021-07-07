@@ -2,8 +2,6 @@ import os
 import unittest
 import logging
 import vtk, qt, ctk, slicer
-from PythonQt5 import QtGui
-from vtk.qt5.QVTKOpenGLWidget import QVTKOpenGLWidget
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 
@@ -79,8 +77,8 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget):
     self.viewNode.SetLayoutColor(layoutColor)
     self.viewNode.SetAndObserveParentLayoutNodeID(self.viewOwnerNode.GetID())    
 
-    self.stereoWidget = QVTKOpenGLWidget()
-    self.viewWidget = slicer.qMRMLThreeDWidget(self.stereoWidget) 
+    # self.stereoWidget = QVTKOpenGLWidget()  si on ne peut pas avoir le stereo widget par defaut > syntaxe affreuse chanegemet de plan
+    self.viewWidget = slicer.qMRMLThreeDWidget() 
     # self.viewWidget.setFormat(self.setStrereo(True)) #passe au format stereo, voit si bonne forme pour le code
     self.viewWidget.setQuadBufferStereoSupportEnabled(1)
 
