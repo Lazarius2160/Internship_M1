@@ -5,6 +5,7 @@ import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
 from slicer.util import VTKObservationMixin
 
+
 #
 # mySecondModule
 #
@@ -13,6 +14,9 @@ class mySecondModule(ScriptedLoadableModule):
   """Uses ScriptedLoadableModule base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
+  # Depending on which VTK to use, needs to have slighly different methods
+  #if (VTK_VERSION_NUMBER >= 89000000000ULL):
+  #  VTK890 = 1;
 
   def __init__(self, parent):
     ScriptedLoadableModule.__init__(self, parent)
@@ -80,7 +84,7 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget):
     # self.stereoWidget = QVTKOpenGLWidget()  si on ne peut pas avoir le stereo widget par defaut > syntaxe affreuse chanegemet de plan
     self.viewWidget = slicer.qMRMLThreeDWidget() 
     # self.viewWidget.setFormat(self.setStrereo(True)) #passe au format stereo, voit si bonne forme pour le code
-    self.viewWidget.setQuadBufferStereoSupportEnabled(1)
+    self.viewWidget.setQuadBufferStereoSupportEnabled(1)  # necessaire ?
 
     self.renderWindowQuadBuffer = self.viewWidget.threeDView().renderWindow()
     self.renderWindowQuadBuffer.SetStereoCapableWindow(1)  #on off if the window is created in stereo capable mode, needs to be stereowidget
@@ -94,7 +98,9 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget):
 
     
     #Modify render window
-    # comme on créer la fenetre a partir de view widget surement pas besoin de ces 3 lignes :
+    # comme on créer la fenetre a partir de view widget surement pas besoin de ces 3 lignes
+    # mais si on en a besoin attention à faire diff vtk 8 et 9 cf ligne 17 
+    # car vtk 8 set mais vtk 9 Set.... :
     #self.viewWidget.setRenderWindow(self.renderWindowQuadBuffer)
     #self.renderWindowQuadBuffer.Render()
     
@@ -105,8 +111,9 @@ class mySecondModuleWidget(ScriptedLoadableModuleWidget):
     # self.renderWindowQuadBuffer.StereoUpdate() ici ou dans la fonction precedente fait crash l'appli
     self.viewWidget.show()
     # tests
-    print(self.viewNode.GetStereoType()) #Not available as string only int
-    print(self.renderWindowQuadBuffer.GetStereoTypeAsString())
+    #print (VTK890)
+    # print(self.viewNode.GetStereoType()) #Not available as string only int
+    # print(self.renderWindowQuadBuffer.GetStereoTypeAsString())
   
 
 
