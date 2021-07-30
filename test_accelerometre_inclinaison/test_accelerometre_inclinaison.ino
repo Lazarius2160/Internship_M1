@@ -10,7 +10,7 @@ void setup() {
     Serial.begin(9600);
     icm20600.initialize();
     icm20600.setAccScaleRange(RANGE_2G);
-    // icm20600.reset();
+    //icm20600.reset();
 }
 
 void loop() {
