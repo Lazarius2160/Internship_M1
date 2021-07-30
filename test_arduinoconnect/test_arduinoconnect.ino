@@ -48,7 +48,7 @@ void loop()
 //  Serial.println(val[2]);
   Serial.println(val[0]);
   Serial.println(val[1]);
-  Serial.println(val[2]);
+  //Serial.println(val[2]);
   Serial.println("-------------------");
   delay(1000);                           // wait for this much time before printing next value
 }

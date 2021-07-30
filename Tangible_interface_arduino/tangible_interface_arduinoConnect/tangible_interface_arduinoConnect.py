@@ -1,8 +1,8 @@
 import os
 import unittest
-import logging
 import vtk, qt, ctk, slicer
 from slicer.ScriptedLoadableModule import *
+import logging
 import shutil, subprocess, json
 
 # If needed install serial pylibrary before imporing. If already installed, just import it.
@@ -14,12 +14,191 @@ except ModuleNotFoundError:
   import serial
   import serial.tools.list_ports
 
+#
+# ArduinoAppTemplate
+#
+
+class ArduinoAppTemplate():
+  """ Template class for writing code on top of Arduino Connector
+  """
+  def __init__(self):
+
+    # accelerometerSetup()
+    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
+    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.moveThreeDView)
+
+    self.view = slicer.app.layoutManager().threeDWidget(0).threeDView()  
+    self.renderers = self.view.renderWindow().GetRenderers() 
+    self.camera = self.renderers.GetFirstRenderer().GetActiveCamera() 
+
+    # As the datas are received continuously, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
+    global axisToBeChanged
+    axisToBeChanged=0
+
+
+  #def accelerometerSetup():
+  #    # To calibrate the accelerometer
+  #    print("Put the accelerometer flat on a table")
+  #    print("Waiting for calibration")
+  #    time.sleep(3)  # Need to import time
+
+
+  def moveThreeDView(self, caller, event):
+
+  #  global axisToBeChanged
+
+  #  #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
+    previousElevation=0.0    
+  #  previousRoll=0.0
+  #  previousAzimuth=0.0
+  
+    indiceMoyenne = 0
+    valeursMoyennes = 0
+
+  #  if axisToBeChanged==0:
+    for indiceMoyenne in range (0,9,1):
+        valeursMoyennes+= float(self.ArduinoNode.GetParameter("Data"))
+    elevationMoyenne= valeursMoyennes/10
+    newElevation= elevationMoyenne - previousElevation
+    if 0 < newElevation < 2 or -2 < newElevation < 0:
+        newElevation=0
+   
+    print(newElevation)
+    self.camera.Elevation(newElevation) 
+    self.camera.OrthogonalizeViewUp()
+    
+    #print("Camera is rotated around the x axis by ")
+    #print(newElevation)
+
+
+  def sendDataToArduino(self, message):
+    messageSent = slicer.modules.arduinoconnect.widgetRepresentation().self().logic.sendMessage(message)
 
 #
-# tangible_interface
+#ArduinoPlotter
 #
 
-class tangible_interface(ScriptedLoadableModule):
+class ArduinoPlotter():
+  def __init__(self, numberOfSamples):
+
+    self.active = True
+
+    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
+    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.addPointToPlot)
+
+    # Add data into table vtk
+    self.tableNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLTableNode")
+    self.tableNode.SetName("Arduino plotting table")
+    self.table = self.tableNode.GetTable()
+
+    self.numberOfSamples = numberOfSamples
+    self.initializeTable()
+
+    # Create plot node
+    self.plotSeriesNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotSeriesNode", "Amplitude")
+    self.plotSeriesNode.SetName("Arduino plot series")
+    self.plotSeriesNode.SetAndObserveTableNodeID(self.tableNode.GetID())
+    self.plotSeriesNode.SetXColumnName("Samples")
+    self.plotSeriesNode.SetYColumnName("Amplitude")
+    self.plotSeriesNode.SetPlotType(slicer.vtkMRMLPlotSeriesNode.PlotTypeLine)
+    self.plotSeriesNode.SetLineStyle(slicer.vtkMRMLPlotSeriesNode.LineStyleSolid)
+    self.plotSeriesNode.SetMarkerStyle(slicer.vtkMRMLPlotSeriesNode.MarkerStyleSquare)
+    self.plotSeriesNode.SetUniqueColor()
+
+    # Create plot chart node
+    self.plotChartNode = slicer.mrmlScene.AddNewNodeByClass("vtkMRMLPlotChartNode")
+    self.plotChartNode.SetName("Arduino plot chart")
+    self.plotChartNode.AddAndObservePlotSeriesNodeID(self.plotSeriesNode.GetID())
+    self.plotChartNode.SetTitle('Arduino Data')
+    self.plotChartNode.SetXAxisTitle('Samples')
+    self.plotChartNode.SetYAxisTitle('Amplitude')
+    self.plotChartNode.LegendVisibilityOff()
+    self.plotChartNode.SetXAxisRangeAuto(True)
+    self.plotChartNode.SetYAxisRangeAuto(True)
+
+    # Switch to a layout that contains a plot view to create a plot widget
+    self.layoutManager = slicer.app.layoutManager()
+    layoutWithPlot = slicer.modules.plots.logic().GetLayoutWithPlot(self.layoutManager.layout)
+    self.layoutManager.setLayout(layoutWithPlot)
+
+    # Select chart in plot view
+    self.plotWidget = self.layoutManager.plotWidget(0)
+    self.plotViewNode = self.plotWidget.mrmlPlotViewNode()
+    self.plotViewNode.SetPlotChartNodeID(self.plotChartNode.GetID())
+
+  def initializeTable(self):
+
+    self.table.Initialize()
+
+    self.arrX = vtk.vtkFloatArray()
+    self.arrX.SetName("Samples")
+    self.table.AddColumn(self.arrX)
+
+    self.arrY = vtk.vtkFloatArray()
+    self.arrY.SetName("Amplitude")
+    self.table.AddColumn(self.arrY)
+
+    self.table.SetNumberOfRows(self.numberOfSamples)
+    for i in range(self.numberOfSamples):
+        self.table.SetValue(i, 0, i)
+        self.table.SetValue(i, 1, 0)
+
+    self.table.Modified()
+
+  def addPointToPlot(self, caller, event):
+
+    if self.active:
+
+      # Only float data type can be plot
+      try:
+        messageFloat = float(self.ArduinoNode.GetParameter("Data"))
+      except ValueError:
+        return
+
+      self.arrY.InsertNextTuple1(messageFloat)
+      self.arrY.RemoveFirstTuple()
+
+      self.table.Modified()
+      self.plotWidget.plotView().fitToContent()
+
+#
+# Arduino Monitor
+#
+
+class ArduinoMonitor():
+  """ Class for plotting arduno data into a separate window
+  """
+  def __init__(self):
+
+    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
+    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.addLine)
+
+    self.monitor = qt.QTextEdit()
+    self.monitor.setWindowTitle("Arduino monitor")
+    self.monitor.setReadOnly(True)
+    self.monitor.show()
+
+    self.messageLenghtLimit = 50
+
+  def addLine(self, caller, event):
+    message = self.ArduinoNode.GetParameter("Data")
+
+    if len(message) > self.messageLenghtLimit:
+      message = "WARNING: message too long to be shown here\n"
+    elif len(message) <= self.messageLenghtLimit and not message.endswith("\n"):
+      message = message + "\n"
+
+    self.monitor.insertPlainText(message)
+
+    # Show always the last message
+    verticalScrollBar = self.monitor.verticalScrollBar()
+    verticalScrollBar.setValue(verticalScrollBar.maximum)
+
+#
+# ArduinoConnect
+#
+
+class ArduinoConnect(ScriptedLoadableModule):
   """Uses ScriptedLoadableModule base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
@@ -34,31 +213,18 @@ class tangible_interface(ScriptedLoadableModule):
     This module allows move the 3D modèle using an IMU 9DoF connected to an Arduino.
 """
     self.parent.helpText += self.getDefaultModuleDocumentationLink()
-    self.parent.acknowledgementText = """This module has been created thanks to the already existing Arduino Controller module. Infos can be found (here)[https://github.com/pzaffino/SlicerArduinoController] """ # replace with organization, grant and thanks. 
-    
-    
+    self.parent.acknowledgementText = """This module has been created thanks to the already existing Arduino Controller module. Infos can be found (here)[https://github.com/pzaffino/SlicerArduinoController]  """ # replace with organization, grant and thanks. 
+
 #
-# tangible_interfaceWidget
+# ArduinoConnectWidget
 #
 
-class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
+class ArduinoConnectWidget(ScriptedLoadableModuleWidget):
   """Uses ScriptedLoadableModuleWidget base class, available at:
   https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
   """
 
-  def __init__(self, parent=None):
-    """
-    Called when the user opens the module the first time and the widget is initialized.
-    """
-    ScriptedLoadableModuleWidget.__init__(self, parent)
-    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
-    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.turn3DView)
-    # self ou pas self pour l ligne au dessus??---------------------
-
   def setup(self):
-    """
-    Called when the user opens the module the first time and the widget is initialized.
-    """
     ScriptedLoadableModuleWidget.setup(self)
 
     # Plotter
@@ -69,21 +235,30 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
     with open(self.configFileName) as f:
       self.config = json.load(f)
 
-    uiWidget = slicer.util.loadUI(self.resourcePath('UI/tangible_interface.ui'))
+    self.logic = ArduinoConnectLogic()
+
+    # Load widget from .ui file (created by Qt Designer)
+    uiWidget = slicer.util.loadUI(self.resourcePath('UI/ArduinoConnect.ui'))
     self.layout.addWidget(uiWidget)
     self.ui = slicer.util.childWidgetVariables(uiWidget)
 
-    # uiWidget.setMRMLScene(slicer.mrmlScene)
+    # Set IDE labels
+    self.arduinoIDEExe = self.config["IDEExe"]
+    if self.arduinoIDEExe == "":
+      self.arduinoIDEExe = self.autoFindIDEExe()
+    self.ui.IDEPathText.setText(self.arduinoIDEExe)
 
-    self.logic = tangible_interfaceLogic()
-
-    # Connections
+    # connections
     self.ui.portSelectorComboBox.setEnabled(False)
     self.ui.detectDevice.connect('clicked(bool)', self.onDetectDeviceButton)
     self.ui.connectButton.connect('toggled(bool)', self.onConnectButton)
+    self.ui.setIDEButton.connect('clicked(bool)', self.onSetIDEButton)
+    self.ui.runIDEButton.connect('clicked(bool)', self.onRunIDEButton)
+    self.ui.sendButton.connect('clicked(bool)', self.onSendButton)
     self.ui.monitorButton.connect('clicked(bool)', self.onMonitorButton)
     self.ui.plotterButton.connect('toggled(bool)', self.onPlotterButton)
     self.ui.samplesToPlotText.textChanged.connect(self.onSamplesToPlot)
+    self.ui.threeDButton.connect('clicked(bool)', self.onThreeDButton) 
 
 
     # Add vertical spacer
@@ -93,12 +268,21 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
     self.ui.samplesPerSecondText.setText("10")
     self.ui.samplesToPlotText.setText("30")
 
+    
+
   def cleanup(self):
     pass
 
   def writeConfig(self):
     with open(self.configFileName, 'w') as json_file:
       json.dump(self.config, json_file)
+
+  def autoFindIDEExe(self):
+    arduinoIDEExe = shutil.which("arduino")
+    if arduinoIDEExe is None:
+      return ""
+    else:
+      return arduinoIDEExe
 
   def onConnectButton(self, toggle):
 
@@ -140,7 +324,6 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
       self.ui.sendButton.setEnabled(False)
       self.ui.samplesPerSecondText.setEnabled(True)
 
-
   def onDetectDeviceButton(self, clicked):
 
     self.ui.portSelectorComboBox.setEnabled(True)
@@ -153,6 +336,23 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
     elif len(devices)>0:
         for device in devices:
             self.ui.portSelectorComboBox.addItem(device)
+
+  def onSetIDEButton(self, clicked):
+    dialog = qt.QFileDialog()
+    self.arduinoIDEExe = dialog.getOpenFileName(None, "Arduino IDE executable", os.path.expanduser("~"))
+    self.ui.IDEPathText.setText(self.arduinoIDEExe)
+
+    # Update config
+    self.config["IDEExe"] = self.arduinoIDEExe
+    self.writeConfig()
+
+  def onRunIDEButton(self, clicked):
+    if self.arduinoIDEExe != "":
+      subprocess.Popen(self.arduinoIDEExe)
+
+  def onSendButton(self, clicked):
+    message = self.ui.messageText.text
+    self.logic.sendMessage(message)
 
   def onMonitorButton(self, clicked):
     monitor = ArduinoMonitor()
@@ -176,6 +376,10 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
       self.plotter.numberOfSamples = samplesToPlot
       self.plotter.initializeTable()
 
+  #------------------------------------------------------ 
+  def onThreeDButton(self, clicked): 
+    threeDButton = ArduinoAppTemplate() 
+
   def deviceError(self, title, message, error_type="warning"):
     deviceMBox = qt.QMessageBox()
     if error_type == "warning":
@@ -186,14 +390,11 @@ class tangible_interfaceWidget(ScriptedLoadableModuleWidget):
     deviceMBox.setText(message)
     deviceMBox.exec()
 
-  def turn3DView(self, caller, event):
-    print("FIRED! %s" % (self.ArduinoNode.GetParameter("Data")))
-
 #
-# tangible_interfaceLogic
+# ArduinoConnectLogic
 #
 
-class tangible_interfaceLogic(ScriptedLoadableModuleLogic):
+class ArduinoConnectLogic(ScriptedLoadableModuleLogic):
   """This class should implement all the actual
   computation done by your module.  The interface
   should be such that other python code can import
@@ -213,6 +414,14 @@ class tangible_interfaceLogic(ScriptedLoadableModuleLogic):
       slicer.mrmlScene.AddNode(self.parameterNode)
 
       self.arduinoConnection = None
+
+  def sendMessage(self, messageToSend):
+      #print(messageToSend)
+      if self.arduinoConnection is not None:
+        self.arduinoConnection.write(str.encode(messageToSend))
+        return True
+      else:
+        return False
 
   def connect(self, port, baud, samplesPerSecond):
       self.arduinoEndOfLine = '\n'
@@ -252,6 +461,53 @@ class tangible_interfaceLogic(ScriptedLoadableModuleLogic):
 
           qt.QTimer.singleShot(1000/self.arduinoRefreshRateFps, self.pollSerialDevice)
 
+  def processMessage(self, msg):
+      return msg
 
 
+class ArduinoConnectTest(ScriptedLoadableModuleTest):
+  """
+  This is the test case for your scripted module.
+  Uses ScriptedLoadableModuleTest base class, available at:
+  https://github.com/Slicer/Slicer/blob/master/Base/Python/slicer/ScriptedLoadableModule.py
+  """
 
+  def setUp(self):
+    """ Do whatever is needed to reset the state - typically a scene clear will be enough.
+    """
+    self.mrmlScene.Clear(0)
+
+  def runTest(self):
+    """Run as few or as many tests as needed here.
+    """
+    self.setUp()
+    self.test_ArduinoConnect1()
+
+  def test_ArduinoConnect1(self):
+    """ Ideally you should have several levels of tests.  At the lowest level
+    tests should exercise the functionality of the logic with different inputs
+    (both valid and invalid).  At higher levels your tests should emulate the
+    way the user would interact with your code and confirm that it still works
+    the way you intended.
+    One of the most important features of the tests is that it should alert other
+    developers when their changes will have an impact on the behavior of your
+    module.  For example, if a developer removes a feature that you depend on,
+    your test should break so they know that the feature is needed.
+    """
+
+    self.delayDisplay("Starting the test")
+    #
+    # first, get some data
+    #
+    import SampleData
+    SampleData.downloadFromURL(
+      nodeNames='FA',
+      fileNames='FA.nrrd',
+      uris='http://self.kitware.com/midas3/download?items=5767',
+      checksums='SHA256:12d17fba4f2e1f1a843f0757366f28c3f3e1a8bb38836f0de2a32bb1cd476560')
+    self.delayDisplay('Finished with download and loading')
+
+    volumeNode = slicer.util.getNode(pattern="FA")
+    logic = ArduinoConnectLogic()
+    self.assertIsNotNone( logic.hasImageData(volumeNode) )
+    self.delayDisplay('Test passed!')

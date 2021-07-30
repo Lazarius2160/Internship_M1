@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>tangible_interface</class>
+	<class>ArduinoConnect</class>
 	<widget class="QWidget" name="ArduinoConnect">
 		<property name="geometry">
 			<rect>
@@ -24,7 +24,7 @@
 			<item row="2" column="0">
 				<widget class="QLabel" name="baudLabel">
 					<property name="text">
-						<string>Baud:</string>
+						<string>Baud</string>
 					</property>
 				</widget>
 			</item>
@@ -77,6 +77,40 @@
 					</property>
 				</widget>
 			</item>
+			<item row="9" column="0" colspan="2">
+				<widget class="QLabel" name="IDELabel">
+					<property name="font">
+						<font>
+							<weight>75</weight>
+							<bold>true</bold>
+						</font>
+					</property>
+					<property name="text">
+						<string>Arduino IDE</string>
+					</property>
+				</widget>
+			</item>
+			<item row="10" column="0">
+				<widget class="QLabel" name="IDEExeLabel">
+					<property name="text">
+						<string>Executable</string>
+					</property>
+				</widget>
+			</item>
+			<item row="13" column="0">
+				<widget class="QPushButton" name="setIDEButton">
+					<property name="text">
+						<string>Set IDE</string>
+					</property>
+				</widget>
+			</item>
+			<item row="13" column="1">
+				<widget class="QPushButton" name="runIDEButton">
+					<property name="text">
+						<string>Run IDE</string>
+					</property>
+				</widget>
+			</item>
 			<item row="0" column="0" colspan="2">
 				<widget class="QLabel" name="connectionLabel">
 					<property name="font">
@@ -87,6 +121,26 @@
 					</property>
 					<property name="text">
 						<string>Connection setting</string>
+					</property>
+				</widget>
+			</item>
+			<item row="8" column="0" colspan="2">
+				<spacer name="horizontalSpacer">
+					<property name="orientation">
+						<enum>Qt::Horizontal</enum>
+					</property>
+					<property name="sizeHint" stdset="0">
+						<size>
+							<width>40</width>
+							<height>20</height>
+						</size>
+					</property>
+				</spacer>
+			</item>
+			<item row="10" column="1">
+				<widget class="QLineEdit" name="IDEPathText">
+					<property name="readOnly">
+						<bool>true</bool>
 					</property>
 				</widget>
 			</item>
@@ -102,6 +156,19 @@
 						<string>Monitor</string>
 					</property>
 				</widget>
+			</item>
+			<item row="14" column="0" colspan="2">
+				<spacer name="horizontalSpacer2">
+					<property name="orientation">
+						<enum>Qt::Horizontal</enum>
+					</property>
+					<property name="sizeHint" stdset="0">
+						<size>
+							<width>40</width>
+							<height>20</height>
+						</size>
+					</property>
+				</spacer>
 			</item>
 			<item row="21" column="0" colspan="2">
 				<widget class="QPushButton" name="monitorButton">
@@ -120,14 +187,14 @@
 					</property>
 				</widget>
 			</item>
-			<item row="23" column="0">
+			<item row="24" column="0">
 				<widget class="QLabel" name="labelSamples">
 					<property name="text">
-						<string>Samples:</string>
+						<string>Samples</string>
 					</property>
 				</widget>
 			</item>
-			<item row="23" column="1">
+			<item row="24" column="1">
 				<widget class="QLineEdit" name="samplesToPlotText">
 					<property name="layoutDirection">
 						<enum>Qt::LeftToRight</enum>
@@ -143,7 +210,7 @@
 			<item row="3" column="0">
 				<widget class="QLabel" name="labelSamplesPerSecond">
 					<property name="text">
-						<string>Samples/s:</string>
+						<string>Samples/s</string>
 					</property>
 				</widget>
 			</item>
@@ -166,6 +233,63 @@
 						</size>
 					</property>
 				</spacer>
+			</item>
+			<item row="15" column="0">
+				<widget class="QLabel" name="senderLabel">
+					<property name="font">
+						<font>
+							<weight>75</weight>
+							<bold>true</bold>
+						</font>
+					</property>
+					<property name="text">
+						<string>Sender</string>
+					</property>
+				</widget>
+			</item>
+			<item row="16" column="1">
+				<widget class="QLineEdit" name="messageText">
+					<property name="alignment">
+						<set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+					</property>
+				</widget>
+			</item>
+			<item row="17" column="0" colspan="2">
+				<widget class="QPushButton" name="sendButton">
+					<property name="enabled">
+						<bool>false</bool>
+					</property>
+					<property name="text">
+						<string>Send message</string>
+					</property>
+				</widget>
+			</item>
+			<item row="16" column="0">
+				<widget class="QLabel" name="label_2">
+					<property name="text">
+						<string>Message</string>
+					</property>
+				</widget>
+			</item>
+			<item row="25" column="0">
+				<widget class="QLabel" name="label">
+					<property name="font">
+						<font>
+							<weight>75</weight>
+							<bold>true</bold>
+						</font>
+					</property>
+					<property name="text">
+						<string>Control 3D view</string>
+					</property>
+				</widget>
+			</item>
+			<item row="26" column="0" colspan="2">
+				<widget class="QPushButton" name="threeDButton">
+					<property name="text">
+						<string>Move three D view</string>
+					</property>
+				</widget>
 			</item>
 		</layout>
 	</widget>
