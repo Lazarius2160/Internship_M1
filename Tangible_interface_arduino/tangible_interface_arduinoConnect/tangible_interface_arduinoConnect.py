@@ -35,7 +35,12 @@ class ArduinoAppTemplate():
     global axisToBeChanged
     axisToBeChanged=0
 
-
+    #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
+    global previousElevation, previousRoll
+    previousElevation=0.0    
+    previousRoll=0.0
+  #  previousAzimuth=0.0
+   
   #def accelerometerSetup():
   #    # To calibrate the accelerometer
   #    print("Put the accelerometer flat on a table")
@@ -45,30 +50,65 @@ class ArduinoAppTemplate():
 
   def moveThreeDView(self, caller, event):
 
-  #  global axisToBeChanged
-
-  #  #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
-    previousElevation=0.0    
-  #  previousRoll=0.0
-  #  previousAzimuth=0.0
+    global axisToBeChanged
+    global previousElevation, previousRoll
   
     indiceMoyenne = 0
-    valeursMoyennes = 0
+    valeursMoyennesElevation = 0
+    valeursMoyennesRoll = 0
 
-  #  if axisToBeChanged==0:
-    for indiceMoyenne in range (0,9,1):
-        valeursMoyennes+= float(self.ArduinoNode.GetParameter("Data"))
-    elevationMoyenne= valeursMoyennes/10
-    newElevation= elevationMoyenne - previousElevation
-    if 0 < newElevation < 2 or -2 < newElevation < 0:
-        newElevation=0
-   
-    print(newElevation)
-    self.camera.Elevation(newElevation) 
-    self.camera.OrthogonalizeViewUp()
+    newElevation=0.0
+    newRoll=0.0 
+
+    #for indiceMoyenne in range (0,20,1):  #on prend 10 valeurs chacun
+    valeurLue= float(self.ArduinoNode.GetParameter("Data"))
+    if axisToBeChanged==0:
+      #valeursMoyennesElevation+= valeurLue 
+      #newElevation= elevationMoyenne - previousElevation
+      if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
+        if ((previousElevation-valeurLue)>=(-2)):
+            newElevation= valeurLue - previousElevation + 90
+            print("test descente dans positifs")
+        else :
+            newElevation= valeurLue - previousElevation
+      else :
+          newElevation= valeurLue - previousElevation
+      previousElevation=valeurLue
+      print(newElevation)
+      axisToBeChanged=1            
+ 
+    else : #axisToBeChanged==1
+      #valeursMoyennesRoll+= valeurLue
+      #newRoll= rollMoyenne - previousRoll
+      newRoll= valeurLue - previousRoll  
+      previousRoll=valeurLue
+      print(newRoll)
+      axisToBeChanged=0
     
-    #print("Camera is rotated around the x axis by ")
-    #print(newElevation)
+
+    #elevationMoyenne= valeursMoyennesElevation/10
+
+    #rollMoyenne= valeursMoyennesRoll/10
+
+
+    if 0 < newElevation < 3 or -3 < newElevation < 0:  #Pour quand meme arriver a se stabiliser si on arrete de bouger
+        if 0 < newRoll < 10 or -10 < newRoll < 0:  #Pour ne bouger que le long d'un axe 
+            newRoll=0
+        newElevation=0
+    if 0 < newRoll < 3 or -3 < newRoll < 0:
+        if 0 < newElevation < 10 or -10 < newElevation < 0:
+            newElevation=0
+        newRoll=0    
+
+    print("Elevation: ")
+    print(newElevation)
+    self.camera.Elevation(newElevation)
+    #print("Roll: ")
+    #print(newRoll)
+    self.camera.Roll(newRoll)
+    self.camera.OrthogonalizeViewUp()
+
+    print("Nouvelle iteration\n")
 
 
   def sendDataToArduino(self, message):
