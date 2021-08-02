@@ -53,9 +53,9 @@ class ArduinoAppTemplate():
     global axisToBeChanged
     global previousElevation, previousRoll
   
-    indiceMoyenne = 0
-    valeursMoyennesElevation = 0
-    valeursMoyennesRoll = 0
+    #indiceMoyenne = 0
+    #valeursMoyennesElevation = 0
+    #valeursMoyennesRoll = 0
 
     newElevation=0.0
     newRoll=0.0 
@@ -63,45 +63,58 @@ class ArduinoAppTemplate():
     #for indiceMoyenne in range (0,20,1):  #on prend 10 valeurs chacun
     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
     if axisToBeChanged==0:
-      #valeursMoyennesElevation+= valeurLue 
-      #newElevation= elevationMoyenne - previousElevation
       if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
-        if ((previousElevation-valeurLue)>=(-2)):
-            newElevation= valeurLue - previousElevation + 90
-            print("test descente dans positifs")
+        if ((valeurLue-previousElevation)<=2):
+            newElevation= previousElevation - valeurLue
+            print("previous cas 1")
+            print(previousElevation)
+            print("valeur lue")
+            print(valeurLue)
         else :
             newElevation= valeurLue - previousElevation
+            print("previous cas 2")
+            print(previousElevation)
+            print("valeur lue")
+            print(valeurLue)
       else :
-          newElevation= valeurLue - previousElevation
-      previousElevation=valeurLue
-      print(newElevation)
+        if ((valeurLue-previousElevation)>=-2):
+          newElevation= -(valeurLue - previousElevation)
+          print("previous cas 3")
+          print(previousElevation)
+          print("valeur lue")
+          print(valeurLue)
+        else :
+          newElevation= previousElevation - newElevation
+          print("previous cas 4")
+          print(previousElevation)
+          print("valeur lue")
+          print(valeurLue)
+
+      if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+        if 0 < newRoll < 10 or -10 < newRoll < 0:  #pour ne bouger que le long d'un axe 
+          newRoll=0
+        newElevation=0
+        #on ne change pas previous elevation car on a pas bouge
+      else :
+        previousElevation=valeurLue
       axisToBeChanged=1            
  
     else : #axisToBeChanged==1
       #valeursMoyennesRoll+= valeurLue
       #newRoll= rollMoyenne - previousRoll
-      newRoll= valeurLue - previousRoll  
-      previousRoll=valeurLue
-      print(newRoll)
+      #newRoll= valeurLue - previousRoll  
+      #previousRoll=valeurLue
+      #print(newRoll)
       axisToBeChanged=0
     
 
-    #elevationMoyenne= valeursMoyennesElevation/10
+        
+    #if 0 < newRoll < 2 or -2 < newRoll < 0:
+    #    if 0 < newElevation < 10 or -10 < newElevation < 0:
+    #        newElevation=0
+    #    newRoll=0    
 
-    #rollMoyenne= valeursMoyennesRoll/10
 
-
-    if 0 < newElevation < 3 or -3 < newElevation < 0:  #Pour quand meme arriver a se stabiliser si on arrete de bouger
-        if 0 < newRoll < 10 or -10 < newRoll < 0:  #Pour ne bouger que le long d'un axe 
-            newRoll=0
-        newElevation=0
-    if 0 < newRoll < 3 or -3 < newRoll < 0:
-        if 0 < newElevation < 10 or -10 < newElevation < 0:
-            newElevation=0
-        newRoll=0    
-
-    print("Elevation: ")
-    print(newElevation)
     self.camera.Elevation(newElevation)
     #print("Roll: ")
     #print(newRoll)
