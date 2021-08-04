@@ -31,38 +31,51 @@ class ArduinoAppTemplate():
     self.renderers = self.view.renderWindow().GetRenderers() 
     self.camera = self.renderers.GetFirstRenderer().GetActiveCamera() 
 
-    # As the datas are received continuously, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
+    # As the datas are received continuously, we should separate angle from axis x (roll), y (elevation) and z (azimuth)
     global axisToBeChanged
     axisToBeChanged=0
 
     #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
-    global previousElevation, previousRoll
+    global previousElevation, previousRoll, previousAzimuth
     previousElevation=0.0    
     previousRoll=0.0
-  #  previousAzimuth=0.0
-   
-  #def accelerometerSetup():
-  #    # To calibrate the accelerometer
-  #    print("Put the accelerometer flat on a table")
-  #    print("Waiting for calibration")
-  #    time.sleep(3)  # Need to import time
+    previousAzimuth=0.0
 
 
   def moveThreeDView(self, caller, event):
 
     global axisToBeChanged
-    global previousElevation, previousRoll
-  
-    #indiceMoyenne = 0
-    #valeursMoyennesElevation = 0
-    #valeursMoyennesRoll = 0
-
+    global previousElevation, previousRoll, previousAzimuth
+ 
     newElevation=0.0
     newRoll=0.0 
+    newAzimuth=0.0
 
-    #for indiceMoyenne in range (0,20,1):  #on prend 10 valeurs chacun
     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
-    if axisToBeChanged==0:
+
+    if axisToBeChanged==0: 
+      # Equivalent to roll, around axis X, from 0 to 180 degree
+      if 0<=valeurLue<=175:
+          newRoll= valeurLue - previousRoll  
+          previousRoll=valeurLue
+      elif 175<=PreviousRoll<=180 and -180<=newRoll<=175:
+          #Cas particulier avec passage abrupte de  180 a -180
+          newRoll = valeurLue + previousRoll
+      else : # Between -175 and 0
+          newRoll= - valeurLue - previousRoll  
+          previousRoll=valeurLue
+      
+      if 0 < newRoll < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+        if 0 < newElevation < 10 or -10 < newElevation < 0:  #pour ne bouger que le long d'un axe 
+          newElevation=0
+        newRoll=0
+      else :
+        previousElevation=valeurLue
+
+      axisToBeChanged=1            
+ 
+    elif axisToBeChanged==1 :
+      # Equivalent to Elevation, around axis Y, from 0 to 90 degree
       if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
         if ((valeurLue-previousElevation)<=2):
             newElevation= previousElevation - valeurLue
@@ -97,16 +110,14 @@ class ArduinoAppTemplate():
         #on ne change pas previous elevation car on a pas bouge
       else :
         previousElevation=valeurLue
-      axisToBeChanged=1            
- 
-    else : #axisToBeChanged==1
-      #valeursMoyennesRoll+= valeurLue
-      #newRoll= rollMoyenne - previousRoll
-      #newRoll= valeurLue - previousRoll  
-      #previousRoll=valeurLue
-      #print(newRoll)
-      axisToBeChanged=0
+      axisToBeChanged=2
     
+    else :
+      # Equivalent to Azimuth, around axis Z, from 0 to 360 degree
+
+      axisToBeChanged=0
+
+
 
         
     #if 0 < newRoll < 2 or -2 < newRoll < 0:
