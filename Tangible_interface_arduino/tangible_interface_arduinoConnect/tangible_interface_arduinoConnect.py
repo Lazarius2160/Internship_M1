@@ -39,7 +39,7 @@ class ArduinoAppTemplate():
     global previousElevation, previousRoll, previousAzimuth
     previousElevation=0.0    
     previousRoll=0.0
-    previousAzimuth=0.0
+    previousAzimuth=45.0 #on considere qu'on commence avec un accelerometre a plat avec les branchements a gauche
 
 
   def moveThreeDView(self, caller, event):
@@ -53,92 +53,92 @@ class ArduinoAppTemplate():
 
     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
 
-    if axisToBeChanged==0: 
-      print("valeur lue:")
-      print(valeurLue)
-      print("previous:")
-      print(previousElevation)
-      # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
-      if previousElevation>=0 and valeurLue<=0:
-          newElevation= - valeurLue - previousElevation 
-      elif previousElevation<=0 and valeurLue>=0:
-          newElevation = valeurLue - previousElevation
-      elif previousElevation>=0 and valeurLue>=0 :
-        if valeurLue>previousElevation:
-          newElevation= valeurLue - previousElevation
-        else : #on part dans le sens oppose a la rotation normale de l'axe
-          newElevation= -(previousElevation - valeurLue)
-      else : # both negatives
-          if abs(valeurLue)>abs(previousElevation):
-            newElevation= -(- valeurLue + previousElevation)
-          else :
-            newElevation= - previousElevation + valeurLue 
-      print(newElevation)
+    #if axisToBeChanged==0: 
+    #  # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
+    #  if previousElevation>=0 and valeurLue<=0:
+    #      newElevation= - valeurLue - previousElevation 
+    #  elif previousElevation<=0 and valeurLue>=0:
+    #      newElevation = valeurLue - previousElevation
+    #  elif previousElevation>=0 and valeurLue>=0 :
+    #    if valeurLue>previousElevation:
+    #      newElevation= valeurLue - previousElevation
+    #    else : #on part dans le sens oppose a la rotation normale de l'axe
+    #      newElevation= -(previousElevation - valeurLue)
+    #  else : # both negatives
+    #      if abs(valeurLue)>abs(previousElevation):
+    #        newElevation= -(- valeurLue + previousElevation)
+    #      else :
+    #        newElevation= - previousElevation + valeurLue 
 
-      if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
-        if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
-          newRoll=0
-          newAzimuth=0
-        newElevation=0
-        # le previous roll ne change pas on ne s'est pas deplace
-      else :
-        previousElevation=valeurLue
-      self.camera.Elevation(newElevation)
-      axisToBeChanged=0        
+    #  if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+    #    if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
+    #      newRoll=0
+    #      newAzimuth=0
+    #    newElevation=0
+    #    # le previous roll ne change pas on ne s'est pas deplace
+    #  else :
+    #    previousElevation=valeurLue
+    #  self.camera.Elevation(newElevation)
+    #  axisToBeChanged=1      
 
     
     #elif axisToBeChanged==1 :
-    #  # Equivalent to Elevation, around axis Y, from 0 to 90 degree
-    #  if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
-    #    if ((valeurLue-previousElevation)<=2):
-    #        newElevation= previousElevation - valeurLue
-    #        print("previous cas 1")
-    #        print(previousElevation)
-    #        print("valeur lue")
-    #        print(valeurLue)
-    #    else :
-    #        newElevation= valeurLue - previousElevation
-    #        print("previous cas 2")
-    #        print(previousElevation)
-    #        print("valeur lue")
-    #        print(valeurLue)
-    #  else :
-    #    if ((valeurLue-previousElevation)>=-2):
-    #      newElevation= -(valeurLue - previousElevation)
-    #      print("previous cas 3")
-    #      print(previousElevation)
-    #      print("valeur lue")
-    #      print(valeurLue)
-    #    else :
-    #      newElevation= previousElevation - newElevation
-    #      print("previous cas 4")
-    #      print(previousElevation)
-    #      print("valeur lue")
-    #      print(valeurLue)
-      
-    #  self.camera.Elevation(newElevation)
-    #  previousElevation=valeurLue
-    #  axisToBeChanged=2
+    # Equivalent to Pitch on arduino and roll on Slicer, around axis Y, from 0 to 90 degree
+    print(valeurLue)
+    print("previous roll")
+    print(previousRoll)
+    if previousRoll>=0 and valeurLue<=0:
+      newRoll= -(valeurLue + previousRoll)
+    elif previousRoll<=0 and valeurLue>=0:
+      newRoll= - previousRoll - valeurLue
+    elif previousRoll>=0 and valeurLue>=0: # Pour faire des tours complet et ne pas se limiter a 0 +90 
+        if abs(valeurLue)>abs(previousRoll):
+            print("iciiiiii")
+            newRoll= valeurLue- previousRoll
+        else :
+            print("laaaaa")
+            newRoll= previousRoll - valeurLue
+    else: # previousRoll<0 and valeurLue<0
+        if valeurLue>previousRoll:
+            print("noooon")
+            newRoll=valeurLue-previousRoll
+        else :
+            print("paaaaaas")
+            newRoll=previousRoll-valeurLue
 
-    #  #if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
-    #  #  if 0 < newRoll < 10 or -10 < newRoll < 0:  #pour ne bouger que le long d'un axe 
-    #  #    newRoll=0
-    #  #  newElevation=0
-    #  #  #on ne change pas previous elevation car on a pas bouge
-    #  #else :
-    #  #  previousElevation=valeurLue
-    #  #
+    if 0 < newRoll < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+      if 0 < newElevation < 10 or -10 < newAzimuth < 0:  #pour ne bouger que le long d'un axe 
+        newElevation=0
+        newAzimuth=0
+      newRoll=0
+        #on ne change pas previous elevation car on a pas bouge
+    else :
+      previousRoll=valeurLue
+    print("new roll")
+    print(newRoll)
+    self.camera.Roll(newRoll)
+   #   axisToBeChanged=2
+
+
+      
     
     #else :
-    #  # Equivalent to Azimuth, around axis Z, from 0 to 360 degree
-    #  if previousAzimuth<=valeurLue:
-    #      newAzimuth=valeurLue-previousAzimuth
+    #  # equivalent to Heading on arduino and azimuth on Slicer, around axis z, from 0 to 360 degree
+    #  if previousAzimuth>=valeurLue:
+    #    newAzimuth= previousAzimuth - valeurLue
     #  else :
-    #      newAzimuth=previpreviousAzimuth-valeurLue
-          
+    #    newAzimuth=-(valeurLue-previousAzimuth)
+         
+    #  if 0 < newAzimuth < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+    #    if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newElevation < 10 or -10 < newElevation < 0):  #pour ne bouger que le long d'un axe 
+    #      newRoll=0
+    #      newElevation=0
+    #    newAzimuth=0
+    #    # le previous roll ne change pas on ne s'est pas deplace
+    #  else :
+    #    previousAzimuth=valeurLue
     #  self.camera.Azimuth(newAzimuth)
-    #  previousAzimuth=valeurLue
-    #  axisToBeChanged=0
+    # axistobechanged=0
     
 
     self.camera.OrthogonalizeViewUp()

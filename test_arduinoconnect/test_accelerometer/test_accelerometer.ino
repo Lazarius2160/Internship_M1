@@ -51,9 +51,9 @@ void loop() {
     roll = atan2((float)acc_y, (float)acc_z);
     pitch = atan2(-(float)acc_x, sqrt((float)acc_y * acc_y + (float)acc_z * acc_z));
 //    Serial.print("Roll: ");
-    Serial.println(roll * 57.3);
+//    Serial.println(roll * 57.3);
 //    Serial.print("Pitch: ");
-//    Serial.println(pitch * 57.3);
+    Serial.println(pitch * 57.3);
 
     double Xheading = x * cos(pitch) + y * sin(roll) * sin(pitch) + z * cos(roll) * sin(pitch);
     double Yheading = y * cos(roll) - z * sin(pitch);
@@ -63,7 +63,7 @@ void loop() {
 
 //    Serial.print("Heading: ");
 //    Serial.println(heading);
-    //Serial.println("--------------------------------");
+
 
     delay(500);
 
