@@ -84,26 +84,19 @@ class ArduinoAppTemplate():
     
     #elif axisToBeChanged==1 :
     # Equivalent to Pitch on arduino and roll on Slicer, around axis Y, from 0 to 90 degree
-    print(valeurLue)
-    print("previous roll")
-    print(previousRoll)
     if previousRoll>=0 and valeurLue<=0:
       newRoll= -(valeurLue + previousRoll)
     elif previousRoll<=0 and valeurLue>=0:
       newRoll= - previousRoll - valeurLue
     elif previousRoll>=0 and valeurLue>=0: # Pour faire des tours complet et ne pas se limiter a 0 +90 
         if abs(valeurLue)>abs(previousRoll):
-            print("iciiiiii")
             newRoll= valeurLue- previousRoll
         else :
-            print("laaaaa")
             newRoll= previousRoll - valeurLue
     else: # previousRoll<0 and valeurLue<0
         if valeurLue>previousRoll:
-            print("noooon")
             newRoll=valeurLue-previousRoll
         else :
-            print("paaaaaas")
             newRoll=previousRoll-valeurLue
 
     if 0 < newRoll < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
@@ -114,8 +107,6 @@ class ArduinoAppTemplate():
         #on ne change pas previous elevation car on a pas bouge
     else :
       previousRoll=valeurLue
-    print("new roll")
-    print(newRoll)
     self.camera.Roll(newRoll)
    #   axisToBeChanged=2
 
