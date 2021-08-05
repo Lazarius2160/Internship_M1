@@ -31,7 +31,7 @@ class ArduinoAppTemplate():
     self.renderers = self.view.renderWindow().GetRenderers() 
     self.camera = self.renderers.GetFirstRenderer().GetActiveCamera() 
 
-    # As the datas are received continuously, we should separate angle from axis x (roll), y (elevation) and z (azimuth)
+    # As the datas are received continuously, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
     global axisToBeChanged
     axisToBeChanged=0
 
@@ -54,82 +54,93 @@ class ArduinoAppTemplate():
     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
 
     if axisToBeChanged==0: 
-      # Equivalent to roll, around axis X, from 0 to 180 degree
-      if 0<=valeurLue<=175:
-          newRoll= valeurLue - previousRoll  
-          previousRoll=valeurLue
-      elif 175<=PreviousRoll<=180 and -180<=newRoll<=175:
-          #Cas particulier avec passage abrupte de  180 a -180
-          newRoll = valeurLue + previousRoll
-      else : # Between -175 and 0
-          newRoll= - valeurLue - previousRoll  
-          previousRoll=valeurLue
-      
-      if 0 < newRoll < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
-        if 0 < newElevation < 10 or -10 < newElevation < 0:  #pour ne bouger que le long d'un axe 
-          newElevation=0
-        newRoll=0
-      else :
-        previousElevation=valeurLue
-
-      axisToBeChanged=1            
- 
-    elif axisToBeChanged==1 :
-      # Equivalent to Elevation, around axis Y, from 0 to 90 degree
-      if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
-        if ((valeurLue-previousElevation)<=2):
-            newElevation= previousElevation - valeurLue
-            print("previous cas 1")
-            print(previousElevation)
-            print("valeur lue")
-            print(valeurLue)
-        else :
-            newElevation= valeurLue - previousElevation
-            print("previous cas 2")
-            print(previousElevation)
-            print("valeur lue")
-            print(valeurLue)
-      else :
-        if ((valeurLue-previousElevation)>=-2):
-          newElevation= -(valeurLue - previousElevation)
-          print("previous cas 3")
-          print(previousElevation)
-          print("valeur lue")
-          print(valeurLue)
-        else :
-          newElevation= previousElevation - newElevation
-          print("previous cas 4")
-          print(previousElevation)
-          print("valeur lue")
-          print(valeurLue)
+      print("valeur lue:")
+      print(valeurLue)
+      print("previous:")
+      print(previousElevation)
+      # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
+      if previousElevation>=0 and valeurLue<=0:
+          newElevation= - valeurLue - previousElevation 
+      elif previousElevation<=0 and valeurLue>=0:
+          newElevation = valeurLue - previousElevation
+      elif previousElevation>=0 and valeurLue>=0 :
+        if valeurLue>previousElevation:
+          newElevation= valeurLue - previousElevation
+        else : #on part dans le sens oppose a la rotation normale de l'axe
+          newElevation= -(previousElevation - valeurLue)
+      else : # both negatives
+          if abs(valeurLue)>abs(previousElevation):
+            newElevation= -(- valeurLue + previousElevation)
+          else :
+            newElevation= - previousElevation + valeurLue 
+      print(newElevation)
 
       if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
-        if 0 < newRoll < 10 or -10 < newRoll < 0:  #pour ne bouger que le long d'un axe 
+        if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
           newRoll=0
+          newAzimuth=0
         newElevation=0
-        #on ne change pas previous elevation car on a pas bouge
+        # le previous roll ne change pas on ne s'est pas deplace
       else :
         previousElevation=valeurLue
-      axisToBeChanged=2
+      self.camera.Elevation(newElevation)
+      axisToBeChanged=0        
+
     
-    else :
-      # Equivalent to Azimuth, around axis Z, from 0 to 360 degree
+    #elif axisToBeChanged==1 :
+    #  # Equivalent to Elevation, around axis Y, from 0 to 90 degree
+    #  if (2<=valeurLue<=90.0): # Pour faire des tours complet et ne pas se limiter a 0 +90 
+    #    if ((valeurLue-previousElevation)<=2):
+    #        newElevation= previousElevation - valeurLue
+    #        print("previous cas 1")
+    #        print(previousElevation)
+    #        print("valeur lue")
+    #        print(valeurLue)
+    #    else :
+    #        newElevation= valeurLue - previousElevation
+    #        print("previous cas 2")
+    #        print(previousElevation)
+    #        print("valeur lue")
+    #        print(valeurLue)
+    #  else :
+    #    if ((valeurLue-previousElevation)>=-2):
+    #      newElevation= -(valeurLue - previousElevation)
+    #      print("previous cas 3")
+    #      print(previousElevation)
+    #      print("valeur lue")
+    #      print(valeurLue)
+    #    else :
+    #      newElevation= previousElevation - newElevation
+    #      print("previous cas 4")
+    #      print(previousElevation)
+    #      print("valeur lue")
+    #      print(valeurLue)
+      
+    #  self.camera.Elevation(newElevation)
+    #  previousElevation=valeurLue
+    #  axisToBeChanged=2
 
-      axisToBeChanged=0
+    #  #if 0 < newElevation < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
+    #  #  if 0 < newRoll < 10 or -10 < newRoll < 0:  #pour ne bouger que le long d'un axe 
+    #  #    newRoll=0
+    #  #  newElevation=0
+    #  #  #on ne change pas previous elevation car on a pas bouge
+    #  #else :
+    #  #  previousElevation=valeurLue
+    #  #
+    
+    #else :
+    #  # Equivalent to Azimuth, around axis Z, from 0 to 360 degree
+    #  if previousAzimuth<=valeurLue:
+    #      newAzimuth=valeurLue-previousAzimuth
+    #  else :
+    #      newAzimuth=previpreviousAzimuth-valeurLue
+          
+    #  self.camera.Azimuth(newAzimuth)
+    #  previousAzimuth=valeurLue
+    #  axisToBeChanged=0
+    
 
-
-
-        
-    #if 0 < newRoll < 2 or -2 < newRoll < 0:
-    #    if 0 < newElevation < 10 or -10 < newElevation < 0:
-    #        newElevation=0
-    #    newRoll=0    
-
-
-    self.camera.Elevation(newElevation)
-    #print("Roll: ")
-    #print(newRoll)
-    self.camera.Roll(newRoll)
     self.camera.OrthogonalizeViewUp()
 
     print("Nouvelle iteration\n")
