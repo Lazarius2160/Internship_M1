@@ -83,21 +83,28 @@ class ArduinoAppTemplate():
 
     
     #elif axisToBeChanged==1 :
+    print("valeur lue")
+    print(valeurLue)
+    print("previous")
+    print(previousRoll)
     # Equivalent to Pitch on arduino and roll on Slicer, around axis Y, from 0 to 90 degree
     if previousRoll>=0 and valeurLue<=0:
       newRoll= -(valeurLue + previousRoll)
     elif previousRoll<=0 and valeurLue>=0:
       newRoll= - previousRoll - valeurLue
     elif previousRoll>=0 and valeurLue>=0: # Pour faire des tours complet et ne pas se limiter a 0 +90 
-        if abs(valeurLue)>abs(previousRoll):
+        if valeurLue>previousRoll:
             newRoll= valeurLue- previousRoll
         else :
-            newRoll= previousRoll - valeurLue
+            newRoll= valeurLue - previousRoll
     else: # previousRoll<0 and valeurLue<0
-        if valeurLue>previousRoll:
+        if abs(valeurLue)>abs(previousRoll):
             newRoll=valeurLue-previousRoll
         else :
-            newRoll=previousRoll-valeurLue
+            newRoll= - previousRoll + valeurLue
+
+    if (newRoll+previousRoll)>=90 or (newRoll+previousRoll)<=-90: #on depasse pas les 90 -90 degré 
+      newRoll=0
 
     if 0 < newRoll < 3 :  #pour quand meme arriver a se stabiliser si on arrete de bouger
       if 0 < newElevation < 10 or -10 < newAzimuth < 0:  #pour ne bouger que le long d'un axe 
@@ -107,6 +114,8 @@ class ArduinoAppTemplate():
         #on ne change pas previous elevation car on a pas bouge
     else :
       previousRoll=valeurLue
+    print("new")
+    print(newRoll)
     self.camera.Roll(newRoll)
    #   axisToBeChanged=2
 
@@ -577,3 +586,4 @@ class ArduinoConnectTest(ScriptedLoadableModuleTest):
     logic = ArduinoConnectLogic()
     self.assertIsNotNone( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
+
