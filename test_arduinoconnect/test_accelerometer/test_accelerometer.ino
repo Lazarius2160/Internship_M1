@@ -61,11 +61,11 @@ void loop() {
 
     double heading = 180 + 57.3 * atan2(Yheading, Xheading) + declination_shenzhen;
 
-    Serial.print("Heading: ");
-//    Serial.println(heading);
+//    Serial.print("Heading: ");
+    Serial.println(heading);
 
 
-    delay(500);
+    delay(800);
 
 }
 
