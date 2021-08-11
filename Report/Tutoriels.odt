@@ -1,0 +1,136 @@
+﻿TUTORIELS 
+Fonctionnement zSpace, Visual Studio, Paraview et Arduino Controller Slicer
+Stage CAMBA 2021
+
+
+    1. Ouvrir la démo de zSpace
+    2. Construire un fichier depuis la source avec Windows
+    3. Tutoriel Paraview et Atlas
+    4. Tutoriel Arduino Slicer
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+1. Ouvrir la démo de zSpace
+
+Ouvrir la session avec le mot de passe ISIR2021 
+Cliquer sur le logo Windows en bas à gauche 
+Dans la barre de recherche taper demo 
+Cliquer sur zSpace Demo 
+ 
+Pour que l'écran affiche en 3D il faut mettre les lunettes (si il ne les détecte pas il affichera en 2D) et rester assez proche de l'écran. De même pour le stylet il faut rester dans la zone de détection (assez haut sur l'écran). 
+
+------------------------------------------------------------------------------------------------------------------------
+
+2. Construire un fichier depuis la source avec Windows
+Exemple pour construire Paraview avec ce tutoriel.
+ 
+    • CONNEXION A GITHUB 
+Sur le bureau aller dans Git bash  
+Cloner et créer le repository comme sur Linux (même commandes)
+ 
+
+    • CREER LE CMAKE ET CONSTRUIRE LE PROJET 
+Une fois cela fait, depuis le bureau, aller dans cmake GUI (ou faire en lignes de commandes comme sous linux) 
+Dans cmake mettre le fichier source et le fichier vide où se fera le build (photo p2)
+Cliquer sur configurer 
+Choisir le générateur a utiliser : Visual studio 2019, et la version optionnelle x64 (photo p3) 
+Les options s'affichent (les nouvelles sont en rouges donc la premiere fois tout est rouge) (photo p4)
+Il est alors possible de les modifier ou dans ajouter de nouvelle 
+Re cliquer sur configurer tant que il a des options en rouge 
+Cliquer sur générer puis ouvrir le projet (photo p5)
+Une fois le projet ouvert vérifier que l'on soit en debug ou release en fonction  du choix et en x64 
+A droite clique gauche sur All Build puis build (photo p6)
+ 
+!! Un build prend plusieurs heures et génère beaucoup de warning, ce n'est pas un soucis pour l'usage que l'on en a.
+
+Photos : 
+p2 :
+
+p3 :
+
+
+p4 
+
+p5 
+
+ 
+
+    • ACCEDER A VISUAL STUDIO 
+Comme visual studio code mais plus complet et permet de construire des projets directement  
+Pour ca aller sur le bureau et cliquer sur visual studio 2019 
+Faire ouvrir une solution (le fichier est un .sln), ou un projet 
+Une fois ouvert, sur le côté droit on voit dans le solution explorer les solutions liées au projet 
+Pour construire voir au dessus  
+ 
+Il est aussi possible d'éditer simplement du code C++ python etc en ouvrant un fichier et en ayant l'extension adéquate (si nécessaire, pas pour les langages de base, même fonctionnement que visual studio code) 
+
+-----------------------------------------------------------------------------------------------------------------------------------------------
+
+3. Tutoriel Paraview et Atlas
+Uniquement avec zSpace   
+    • AFFICHER EN 3D SUR LE ZSPACE 
+Cliquer sur le logo windows en bas à gauche de l'écran 
+Taper cmd 
+Cliquer sur invite de commande (command prompt) 
+Taper cd et l'adresse du répertoire qui contient paraview.exe, pour nous : 
+cd C:/paraview/pvbM/bin/Debug/ 
+Une fois dans le répertoire contenant paraview.exe, taper : 
+Paraview.exe --stereo –stereo-type="Crystal Eyes" 
+
+
+Quand paraview est lancé, déplacer la fenêtre des erreurs en bas sur un côté pour ne pas gêner 
+Ouvrir une nouvelle fenêtre d'affichage en cliquant sur le +à côté de layout #1 
+Choisir zSPace view 
+Si la case n'est pas disponible, aller dans Tools > Manage Plugins, cliquer sur zSpace et cliquer sur Load selected 
+ 
+    • AFFICHER L'ATLAS EN 3D SUR LE ZSPACE 
+Aller dans File > Open, trouver les fichiers Atlas YeB models - left.seg.vtm et Atlas YeB models - right.seg.vtm dans  ~/Documents/stageMarine/yeb_bgatlas_YEBMNIbis_ToAH/scene/yeb_bgatlas_scene_mni/Data 
+Une fois les fichiers ouvert (prend du temps sur le zSpace), mettre les lunettes, la vue stereo devrait fonctionner, on le voit en essayant d'utiliser le stylet 
+Pour afficher les couleurs, cliquer sur Solid color en haut de la vue 3D et sélectionner vtkBlocksColors (les couleurs ne sont pas les mêmes que sur le vrais atlas, elles sont générés automatiquement par Paraview) 
+Pour afficher/cacher les différentes parties de l'atlas, deux possibilités: 
+    • Pour afficher et cacher avec une liste d'objets (sans le nom des objets spécifiquements), cliquer dans Edit > Multiblock inspector et cocher/décocher les cases associées au objets 
+    • Pour cacher des élements sur la vue 3D directement, clique gauche sur l'objet à cacher et Hide Blocks, pour re afficher il faut cliquer Show all (pas possible de re afficher un par un avec cette méthode) 
+    • On peut bien sûr combiner les deux  
+ 
+
+------------------------------------------------------------------------------------------------------------------------
+
+4. Tutoriel Arduino Slicer
+    • AJOUTER LE MODULE 
+Doit avoir le plugin Slicer Arduino Move it : 
+Pour l'installer aller dans edit>application settings>modules> ajouter  
+Et avoir le bon code sur la carte arduino, pour vérifier : 
+Brancher la carte arduino sur n'importe quel port USB 
+Ouvrir arduino depuis le bureau 
+Aller dans Tools/outils  
+Selectionner "type de carte : arduino uno"  
+Selectionner le port avec marqué "Arduino Uno" 
+Soit : 
+    • le code est déjà dans la carte, auquel cas quand va dans tools>moniteur serie, on voit s'afficher "Start figure-8 calibration after 2 seconds.",  
+    • soit il faut le mettre dessus en faisant fichier>ouvrir>nom_du_fichier.ino, puis televerser (flèche en dessous de edition) 
+ 
+    • FAIRE FONCTIONNER LE MODULE 
+Ouvrir une scene  
+Aller dans Welcome to Slicer 
+Cliquer sur Developper Tool> Arduino Move it 
+Cliquer sur detect device puis connect 
+Cliquer sur Print data into a window  
+Très important : quand "Start figure-8 calibration after 2 seconds" s'affiche, faire des mouvements de 8 avec l'accélèrometre (pour le calibrer) jusqu’à lire configuring done 
+Mettre l'accèlerometre a plat sur la table et dans la vue 3D cliquer sur le pin, puis vue selon axe A 
+Cliquer sur Move three D view 
+Commencer à faire bouger l'accélèrometre 
+ 
+Attention, si la vue bug (décalage lors du déplacement ou autre), refaire : 
+Mettre l'accèlerometre a plat sur la table et dans la vue 3D cliquer sur le pin, puis vue selon axe A 
+ 
+Vue du GUI arduino 
+
+ 
+Vue du module dans Slicer :
+
+ 
+Schéma de fonctionnement du Slicer Arduino connect module :
+
+ 
+
+
