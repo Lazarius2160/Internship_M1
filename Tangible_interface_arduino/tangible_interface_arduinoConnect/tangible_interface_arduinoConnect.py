@@ -24,17 +24,10 @@ class ArduinoAppTemplate():
   """
   def __init__(self):
 
-    # accelerometerSetup()
-    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
-    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.moveThreeDView)
-
-    self.view = slicer.app.layoutManager().threeDWidget(0).threeDView()  
-    self.renderers = self.view.renderWindow().GetRenderers() 
-    self.camera = self.renderers.GetFirstRenderer().GetActiveCamera() 
-
     # As the datas are received continuously, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
-    global axisToBeChanged
+    global axisToBeChanged, previousAxis
     axisToBeChanged=0
+    previousAxis= 0
 
     #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
     global previousElevation, previousRoll, previousAzimuth
@@ -47,11 +40,15 @@ class ArduinoAppTemplate():
     newRoll=0.0 
     newAzimuth=0.0
 
-    print("Start figure-8 calibration after 2seconds.")
-    # Change camera axis to be A
-    # tab = [0.0,500.0,0.0] 
-    # self.camera.SetPosition(tab) 
-    # print("test")
+    print("Start figure-8 calibration.")
+
+    self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
+    sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.moveThreeDView)
+
+    self.view = slicer.app.layoutManager().threeDWidget(0).threeDView()  
+    self.renderers = self.view.renderWindow().GetRenderers() 
+    self.camera = self.renderers.GetFirstRenderer().GetActiveCamera() 
+
 
   def moveThreeDView(self, caller, event):
 
@@ -61,98 +58,108 @@ class ArduinoAppTemplate():
 
 
     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
-    
-    if axisToBeChanged==0: 
-     # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
-     if previousElevation>=0 and valeurLue<=0:
-         newElevation= - valeurLue - previousElevation 
-     elif previousElevation<=0 and valeurLue>=0:
-         newElevation = valeurLue - previousElevation
-     elif previousElevation>=0 and valeurLue>=0 :
-       if valeurLue>previousElevation:
-         newElevation= valeurLue - previousElevation
-       else : #on part dans le sens oppose a la rotation normale de l'axe
-         newElevation= -(previousElevation - valeurLue)
-     else : # both negatives
-         if abs(valeurLue)>abs(previousElevation):
-           newElevation= -(- valeurLue + previousElevation)
-         else :
-           newElevation= - previousElevation + valeurLue 
 
-     if 0<=newElevation<=3 or -3<=newElevation<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
-      #  if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
-      #    newRoll=0
-      #    newAzimuth=0
-       newElevation=0
-       # le previous roll ne change pas on ne s'est pas deplace
-     else :
-       previousElevation=valeurLue
+    if valeurLue==0 or valeurLue==1 or valeurLue==2:
+      if valeurLue==0:
+        # Alors la prochaine valeur à être affiché sera la donnée sur l'axe X donc le roll
+        axisToBeChanged=0
+      elif valeurLue==1:
+        axisToBeChanged=1
+      else: # valeurLue==2:
+        axisToBeChanged=2
+      # print("Axe qui va etre changé")
+      # print(axisToBeChanged)
 
-     print("Nouvelle elevation")
-     print(newElevation)
-     self.camera.Elevation(newElevation)
-     axisToBeChanged=1      
+    else : 
+      if axisToBeChanged==0: 
+      # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
+        if previousElevation>=0 and valeurLue<=0:
+            newElevation= - valeurLue - previousElevation 
+        elif previousElevation<=0 and valeurLue>=0:
+            newElevation = valeurLue - previousElevation
+        elif previousElevation>=0 and valeurLue>=0 :
+          if valeurLue>previousElevation:
+            newElevation= valeurLue - previousElevation
+          else : #on part dans le sens oppose a la rotation normale de l'axe
+            newElevation= -(previousElevation - valeurLue)
+        else : # both negatives
+            if abs(valeurLue)>abs(previousElevation):
+              newElevation= -(- valeurLue + previousElevation)
+            else :
+              newElevation= - previousElevation + valeurLue 
 
-    
-    elif axisToBeChanged==1 :
-      # Equivalent to Pitch on arduino and roll on Slicer, around axis Y, from 0 to 90 degree
-      if previousRoll>=0 and valeurLue<=0:
-        newRoll= valeurLue - previousRoll
-      elif previousRoll<=0 and valeurLue>=0:
-        newRoll= - previousRoll + valeurLue
-      elif previousRoll>=0 and valeurLue>=0: # Pour faire des tours complet et ne pas se limiter a 0 +90 
-          if valeurLue>previousRoll:
-              newRoll= valeurLue- previousRoll
-          else :
-              newRoll= valeurLue - previousRoll
-      else: # previousRoll<0 and valeurLue<0
-          if abs(valeurLue)>abs(previousRoll):
-              newRoll=valeurLue-previousRoll
-          else :
-              newRoll= - previousRoll + valeurLue
-
-      if 85<=valeurLue<=90 or (-90)<=valeurLue<=(-85): #on depasse pas les 90 -90 degré 
-        if valeurLue>=0:
-          newRoll=90-valeurLue
+        if 0<=newElevation<=2 or -2<=newElevation<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
+          #  if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
+          #    newRoll=0
+          #    newAzimuth=0
+          newElevation=0
+          # le previous roll ne change pas on ne s'est pas deplace
         else :
-          newRoll=-90-valeurLue
+          previousElevation=valeurLue
 
-      if 0<= newRoll <=2 or -2<= newRoll <=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
-        # if (0 < newElevation< 10 or -10 < newElevation< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
-        #   newElevation=0
-        #   newAzimuth=0
-        newRoll=0
-          #on ne change pas previous elevation car on a pas bouge
-      else :
-        previousRoll=valeurLue
-
-      print("Nouveau Roll")
-      print(newRoll)
-      self.camera.Roll(newRoll)
-      axisToBeChanged=2
-    
-    else :
-      # equivalent to Heading on arduino and azimuth on Slicer, around axis z, from 0 to 360 degree
-      if previousAzimuth>=valeurLue:
-        newAzimuth= previousAzimuth - valeurLue
-      else :
-        newAzimuth=-(valeurLue-previousAzimuth)
-
-      if 0 <=newAzimuth<=3 or -3<=newAzimuth<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
-        # if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newElevation < 10 or -10 < newElevation < 0):  #pour ne bouger que le long d'un axe 
-        #   newRoll=0
-        #   newElevation=0
-        newAzimuth=0
-       # le previous roll ne change pas on ne s'est pas deplace
-      else :
-        previousAzimuth=valeurLue
-
-      print("Nouveau azimuth")
-      print(newAzimuth)
-      self.camera.Azimuth(newAzimuth)
-      axisToBeChanged=0
+        # print("Elevation lue")
+        # print(valeurLue)
+        self.camera.Elevation(newElevation)
       
-    self.camera.OrthogonalizeViewUp()
+      
+      elif axisToBeChanged==1 :
+        # Equivalent to Pitch on arduino and roll on Slicer, around axis Y, from 0 to 90 degree
+        if previousRoll>=0 and valeurLue<=0:
+          newRoll= valeurLue - previousRoll
+        elif previousRoll<=0 and valeurLue>=0:
+          newRoll= - previousRoll + valeurLue
+        elif previousRoll>=0 and valeurLue>=0: # Pour faire des tours complet et ne pas se limiter a 0 +90 
+            if valeurLue>previousRoll:
+                newRoll= valeurLue- previousRoll
+            else :
+                newRoll= valeurLue - previousRoll
+        else: # previousRoll<0 and valeurLue<0
+            if abs(valeurLue)>abs(previousRoll):
+                newRoll=valeurLue-previousRoll
+            else :
+                newRoll= - previousRoll + valeurLue
+
+        if 85<=valeurLue<=90 or (-90)<=valeurLue<=(-85): #on depasse pas les 90 -90 degré 
+          if valeurLue>=0:
+            newRoll=90-valeurLue
+          else :
+            newRoll=-90-valeurLue
+
+        if 0<= newRoll <=2 or -2<= newRoll <=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
+          # if (0 < newElevation< 10 or -10 < newElevation< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
+          #   newElevation=0
+          #   newAzimuth=0
+          newRoll=0
+            #on ne change pas previous elevation car on a pas bouge
+        else :
+          previousRoll=valeurLue
+
+        # print("Roll lu")
+        # print(valeurLue)
+        self.camera.Roll(newRoll)
+
+      
+      else :
+        # equivalent to Heading on arduino and azimuth on Slicer, around axis z, from 0 to 360 degree
+        if previousAzimuth>=valeurLue:
+          newAzimuth=-(valeurLue-previousAzimuth)
+        else :
+          newAzimuth= previousAzimuth - valeurLue
+
+        if 0 <=newAzimuth<=2 or -2<=newAzimuth<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
+          # if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newElevation < 10 or -10 < newElevation < 0):  #pour ne bouger que le long d'un axe 
+          #   newRoll=0
+          #   newElevation=0
+          newAzimuth=0
+        # le previous roll ne change pas on ne s'est pas deplace
+        else :
+          previousAzimuth=valeurLue
+
+        # print("Azimuth lu")
+        # print(valeurLue)
+        self.camera.Azimuth(newAzimuth)
+        
+      self.camera.OrthogonalizeViewUp()
 
 
   def sendDataToArduino(self, message):
@@ -595,4 +602,3 @@ class ArduinoConnectTest(ScriptedLoadableModuleTest):
     logic = ArduinoConnectLogic()
     self.assertIsNotNone( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
-

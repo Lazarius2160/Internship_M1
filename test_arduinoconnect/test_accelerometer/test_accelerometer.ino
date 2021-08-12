@@ -31,7 +31,7 @@ void setup() {
     }
     
     //Serial.println("Start figure-8 calibration after 2 seconds.");
-    delay(2000);
+    //delay(2000);
     calibrate(10000, &offset_x, &offset_y, &offset_z);
     //Serial.println("Configuring done.");
 }
@@ -51,8 +51,10 @@ void loop() {
     roll = atan2((float)acc_y, (float)acc_z);
     pitch = atan2(-(float)acc_x, sqrt((float)acc_y * acc_y + (float)acc_z * acc_z));
 //    Serial.print("Roll: ");
+    Serial.println(0); // For X axis
     Serial.println(roll * 57.3);
 //    Serial.print("Pitch: ");
+    Serial.println(1); //For Y axis
     Serial.println(pitch * 57.3);
 
     double Xheading = x * cos(pitch) + y * sin(roll) * sin(pitch) + z * cos(roll) * sin(pitch);
@@ -62,10 +64,10 @@ void loop() {
     double heading = 180 + 57.3 * atan2(Yheading, Xheading) + declination_shenzhen;
 
 //    Serial.print("Heading: ");
+    Serial.println(2); // For Z axis
     Serial.println(heading);
 
-
-    delay(800);
+    delay(400);
 
 }
 
