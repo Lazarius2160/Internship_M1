@@ -67,7 +67,8 @@ void loop() {
     Serial.println(2); // For Z axis
     Serial.println(heading);
 
-    delay(400);
+    // If the delay is too small, Slicer lags and cannot display movements properly
+    delay(1000);
 
 }
 

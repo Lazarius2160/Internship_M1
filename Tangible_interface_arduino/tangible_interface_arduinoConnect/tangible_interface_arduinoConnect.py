@@ -15,6 +15,31 @@ except ModuleNotFoundError:
   import serial
   import serial.tools.list_ports
 
+"""
+
+How the plugin works:
+This programm creates a node to store the data coming from the Arduino device. 
+
+To get the data one has to:
+    - get the node : self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
+    - add an observer :     sceneModifiedObserverTag = self.ArduinoNode.AddObserver(vtk.vtkCommand.ModifiedEvent, self.name_of_the_method)
+    - get the data : data= self.ArduinoNode.GetParameter("Data")
+
+Knowing that the data that is read is **only** what is printed in the arduino code (Serial.println(Data_to_be_seen)), there can be as many
+print as one want, just remind that you'll get them one at a time using data= self.ArduinoNode.GetParameter("Data").
+Indeed if you want to print an array for example you'll print (array[0], array[1]) and only array[0] will be taken into account in the code.
+
+This code makes pair with arduino_accelerometer_slicer.ino, the arduino code part. It works with IMU 9DoF Groove from Seeed, and one needs to 
+install its librairy see here : https://github.com/Seeed-Studio/Seeed_ICM20600_AK09918.
+The arduino part send(print) 6 datas :
+     - 3 ints : 0 1 and 2 to know what axis the data belongs to (0 for x, 1 for y and 2 for z),
+     - 3 floats : roll pitch and yaw which corresponds to the angle made by the IMU, theses are absolutes angles, they do not depends from the previous one.
+The IMU works like a compass so we can get all 3 angles, and the calibration is mandatory, one needs to make 8-like movements for 10seconds otherwise
+the datas are going to be false.
+
+"""
+
+
 #
 # ArduinoAppTemplate
 #
@@ -24,7 +49,7 @@ class ArduinoAppTemplate():
   """
   def __init__(self):
 
-    # As the datas are received continuously, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
+    # As the datas are received one at a time, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
     global axisToBeChanged, previousAxis
     axisToBeChanged=0
     previousAxis= 0
@@ -57,7 +82,7 @@ class ArduinoAppTemplate():
     global newAzimuth, newElevation, newRoll
 
 
-    valeurLue= float(self.ArduinoNode.GetParameter("Data"))
+     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
 
     if valeurLue==0 or valeurLue==1 or valeurLue==2:
       if valeurLue==0:
@@ -602,3 +627,6 @@ class ArduinoConnectTest(ScriptedLoadableModuleTest):
     logic = ArduinoConnectLogic()
     self.assertIsNotNone( logic.hasImageData(volumeNode) )
     self.delayDisplay('Test passed!')
+
+
+
