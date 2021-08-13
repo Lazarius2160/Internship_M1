@@ -52,19 +52,21 @@ class ArduinoAppTemplate():
     # As the datas are received one at a time, we should separate angle from axis x (elevation), y (roll) and z (azimuth)
     global axisToBeChanged, previousAxis
     axisToBeChanged=0
-    previousAxis= 0
 
     #As the azimuth roll and elevation methods depends on the previous angle and that the accelerometer gives us absolute angle, we have to substract the new angle to the former to make our move
     global previousElevation, previousRoll, previousAzimuth
+    # We considere the accelerometer is being flat and have its connections on the left 
     previousElevation=0.0    
     previousRoll=0.0
-    previousAzimuth=0.0 #on considere qu'on commence avec un accelerometre a plat avec les branchements a gauche
+    previousAzimuth=0.0 
 
     global newAzimuth, newElevation, newRoll
     newElevation=0.0
     newRoll=0.0 
     newAzimuth=0.0
 
+    # Advantages of having an IMU is that it's more precise than just an accelerometer, another way to make it more precise is to callibrate it 
+    # It is mandatory to avoid having weird yaw values
     print("Start figure-8 calibration.")
 
     self.ArduinoNode = slicer.mrmlScene.GetFirstNodeByName("arduinoNode")
@@ -81,23 +83,22 @@ class ArduinoAppTemplate():
     global previousElevation, previousRoll, previousAzimuth
     global newAzimuth, newElevation, newRoll
 
+    # We get the data coming from arduino
+    valeurLue= float(self.ArduinoNode.GetParameter("Data"))
 
-     valeurLue= float(self.ArduinoNode.GetParameter("Data"))
-
+    # If the value is 0 1 or 2, it stands for axis x y or z and is used to know which data will be send by the arduino 
     if valeurLue==0 or valeurLue==1 or valeurLue==2:
       if valeurLue==0:
-        # Alors la prochaine valeur à être affiché sera la donnée sur l'axe X donc le roll
+        # Then the next data to be send will be X data which is roll in arduino and elevation here (not the same axis here and in arduino)
         axisToBeChanged=0
       elif valeurLue==1:
         axisToBeChanged=1
       else: # valeurLue==2:
         axisToBeChanged=2
-      # print("Axe qui va etre changé")
-      # print(axisToBeChanged)
 
     else : 
       if axisToBeChanged==0: 
-      # Equivalent to roll on arduino and elevation on Slicer (switch in the axis), around axis X on the accelerometer, from 0 to 180 degree
+      # Equivalent to roll on arduino and elevation on Slicer, around axis X on the accelerometer, from 0 to 180 degree
         if previousElevation>=0 and valeurLue<=0:
             newElevation= - valeurLue - previousElevation 
         elif previousElevation<=0 and valeurLue>=0:
@@ -105,7 +106,7 @@ class ArduinoAppTemplate():
         elif previousElevation>=0 and valeurLue>=0 :
           if valeurLue>previousElevation:
             newElevation= valeurLue - previousElevation
-          else : #on part dans le sens oppose a la rotation normale de l'axe
+          else : # If we go the opposite way to normal ais rotation (see the marker on the IMU)
             newElevation= -(previousElevation - valeurLue)
         else : # both negatives
             if abs(valeurLue)>abs(previousElevation):
@@ -113,17 +114,13 @@ class ArduinoAppTemplate():
             else :
               newElevation= - previousElevation + valeurLue 
 
-        if 0<=newElevation<=2 or -2<=newElevation<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
-          #  if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
-          #    newRoll=0
-          #    newAzimuth=0
+        if 0<=newElevation<=3 or -3<=newElevation<=0:  #To stabilize if we are not actually moving, prevent movement noise
           newElevation=0
-          # le previous roll ne change pas on ne s'est pas deplace
+          # Hence previous elevation remains the same
         else :
           previousElevation=valeurLue
 
-        # print("Elevation lue")
-        # print(valeurLue)
+        # We finally change the elevation on the 3D view
         self.camera.Elevation(newElevation)
       
       
@@ -150,7 +147,7 @@ class ArduinoAppTemplate():
           else :
             newRoll=-90-valeurLue
 
-        if 0<= newRoll <=2 or -2<= newRoll <=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
+        if 0<= newRoll <=3 or -3<= newRoll <=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
           # if (0 < newElevation< 10 or -10 < newElevation< 0) and (0 < newAzimuth < 10 or -10 < newAzimuth < 0):  #pour ne bouger que le long d'un axe 
           #   newElevation=0
           #   newAzimuth=0
@@ -168,10 +165,15 @@ class ArduinoAppTemplate():
         # equivalent to Heading on arduino and azimuth on Slicer, around axis z, from 0 to 360 degree
         if previousAzimuth>=valeurLue:
           newAzimuth=-(valeurLue-previousAzimuth)
+        if (350<=previousAzimuth<=360 and 0<=valeurLue<=10) or (350<=valeurLue<=360 and 0<=previousAzimuth<=10):
+          if 350<=previousAzimuth<=360 and 0<=valeurLue<=10:
+            newAzimuth=-(360-previousAzimuth+valeurLue)
+          if 350<=valeurLue<=360 and 0<=previousAzimuth<=10:
+            newAzimuth=360-valeurLue+valeurLue
         else :
           newAzimuth= previousAzimuth - valeurLue
 
-        if 0 <=newAzimuth<=2 or -2<=newAzimuth<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
+        if 0 <=newAzimuth<=3 or -3<=newAzimuth<=0:  #pour quand meme arriver a se stabiliser si on arrete de bouger
           # if (0 < newRoll< 10 or -10 < newRoll< 0) and (0 < newElevation < 10 or -10 < newElevation < 0):  #pour ne bouger que le long d'un axe 
           #   newRoll=0
           #   newElevation=0
@@ -180,8 +182,6 @@ class ArduinoAppTemplate():
         else :
           previousAzimuth=valeurLue
 
-        # print("Azimuth lu")
-        # print(valeurLue)
         self.camera.Azimuth(newAzimuth)
         
       self.camera.OrthogonalizeViewUp()
