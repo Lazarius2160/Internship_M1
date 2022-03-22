@@ -68,7 +68,6 @@ int main(int, char* [])
     renderWindow->SetWindowName(renderWindow->GetStereoTypeAsString());
     renderWindow->StereoUpdate(); // Marine, besoin d'une update? Si oui où?
 
-    //Marine, pour savoir quel type de stereo on utilise
     cout << "Type de render : " << renderWindow->GetStereoTypeAsString()<< endl;
 
     // The render window interactor captures mouse events

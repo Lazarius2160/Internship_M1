@@ -1,3 +1,0 @@
-myFirstExtension : full plugin to make QuadBuffer option work on SLicer if we can enable QVTKOpenGLStereoWidget by default
-vtkQuadBufferRenderWindow : vtk app using a render window to render in QuadBuffer mode
-vtkQuadBufferWidget : same but using a widget (stereo one)
